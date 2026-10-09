@@ -1,3 +1,4 @@
+require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const jwt = require('jsonwebtoken');
 
 // Verifies the JWT in the Authorization header ("Bearer <token>") and attaches
