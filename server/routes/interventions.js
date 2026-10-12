@@ -28,9 +28,15 @@ router.post('/', auth, async (req, res) => {
 });
 
 // GET /api/interventions (protected)
+// Includes the student's full_name (null if the intervention has no student).
 router.get('/', auth, async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM interventions ORDER BY intervention_id DESC');
+    const result = await pool.query(
+      `SELECT i.*, s.full_name
+       FROM interventions i
+       LEFT JOIN students s ON s.student_id = i.student_id
+       ORDER BY i.intervention_id DESC`
+    );
     res.json(result.rows);
   } catch (err) {
     console.error(err);

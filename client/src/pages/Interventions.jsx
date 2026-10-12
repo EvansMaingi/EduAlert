@@ -1,20 +1,224 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
+import { latestPredictionByStudent } from '../utils/risk';
+
+const emptyForm = {
+  student_id: '',
+  prediction_id: '',
+  action_taken: '',
+  outcome: '',
+  notes: '',
+};
+
+const inputClass =
+  'w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500';
+
+function errorMessage(err, fallback) {
+  return err.response?.data?.error || fallback;
+}
+
+function Field({ label, children, className = '' }) {
+  return (
+    <label className={`block ${className}`}>
+      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
+      {children}
+    </label>
+  );
+}
 
 export default function Interventions() {
   const [interventions, setInterventions] = useState(null);
+  const [students, setStudents] = useState([]);
   const [error, setError] = useState('');
+  const [form, setForm] = useState(emptyForm);
+  const [formError, setFormError] = useState('');
+  const [formSuccess, setFormSuccess] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  // Lookup of the selected student's latest prediction: idle | loading | found | none | error
+  const [predictionStatus, setPredictionStatus] = useState('idle');
+  // The student whose prediction lookup is current, so a slow response for a
+  // previously selected student can't overwrite the field.
+  const selectedStudentRef = useRef('');
+
+  const loadInterventions = useCallback(async () => {
+    try {
+      const { data } = await api.get('/api/interventions');
+      setInterventions(data);
+      setError('');
+    } catch (err) {
+      setError(errorMessage(err, 'Failed to load interventions'));
+    }
+  }, []);
 
   useEffect(() => {
+    loadInterventions();
     api
-      .get('/api/interventions')
-      .then(({ data }) => setInterventions(data))
-      .catch((err) => setError(err.response?.data?.error || 'Failed to load interventions'));
-  }, []);
+      .get('/api/students')
+      .then(({ data }) => setStudents(data))
+      .catch((err) => setFormError(errorMessage(err, 'Failed to load students')));
+  }, [loadInterventions]);
+
+  function updateField(e) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }
+
+  async function handleStudentChange(e) {
+    const studentId = e.target.value;
+    selectedStudentRef.current = studentId;
+    setForm((prev) => ({ ...prev, student_id: studentId, prediction_id: '' }));
+
+    if (!studentId) {
+      setPredictionStatus('idle');
+      return;
+    }
+
+    setPredictionStatus('loading');
+    try {
+      const { data } = await api.get('/api/predictions');
+      if (selectedStudentRef.current !== studentId) return;
+      const latest = latestPredictionByStudent(data).get(Number(studentId));
+      if (latest) {
+        setForm((prev) => ({ ...prev, prediction_id: String(latest.prediction_id) }));
+        setPredictionStatus('found');
+      } else {
+        setPredictionStatus('none');
+      }
+    } catch {
+      if (selectedStudentRef.current === studentId) setPredictionStatus('error');
+    }
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setFormError('');
+    setFormSuccess('');
+    setSubmitting(true);
+    try {
+      await api.post('/api/interventions', {
+        student_id: Number(form.student_id),
+        prediction_id: form.prediction_id === '' ? null : Number(form.prediction_id),
+        action_taken: form.action_taken.trim(),
+        outcome: form.outcome.trim() || null,
+        notes: form.notes.trim() || null,
+      });
+      setForm(emptyForm);
+      selectedStudentRef.current = '';
+      setPredictionStatus('idle');
+      setFormSuccess('Intervention logged.');
+      await loadInterventions();
+    } catch (err) {
+      setFormError(errorMessage(err, 'Failed to log intervention'));
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-semibold">Interventions</h1>
+
+      <form
+        onSubmit={handleSubmit}
+        className="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+      >
+        <h2 className="mb-4 text-lg font-semibold">Log an intervention</h2>
+
+        {formError && (
+          <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{formError}</p>
+        )}
+        {formSuccess && (
+          <p className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+            {formSuccess}
+          </p>
+        )}
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Field label="Student">
+            <select
+              name="student_id"
+              required
+              value={form.student_id}
+              onChange={handleStudentChange}
+              className={inputClass}
+            >
+              <option value="">Select a student…</option>
+              {students.map((s) => (
+                <option key={s.student_id} value={s.student_id}>
+                  {s.full_name}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Prediction ID">
+            <input
+              type="number"
+              name="prediction_id"
+              min="1"
+              value={form.prediction_id}
+              onChange={updateField}
+              placeholder={predictionStatus === 'loading' ? 'Looking up…' : ''}
+              className={inputClass}
+            />
+            {predictionStatus === 'found' && (
+              <span className="mt-1 block text-xs text-slate-500">
+                Pre-filled with this student's latest prediction.
+              </span>
+            )}
+            {predictionStatus === 'none' && (
+              <span className="mt-1 block text-xs text-amber-700">
+                No prediction found for this student - run a prediction first
+              </span>
+            )}
+            {predictionStatus === 'error' && (
+              <span className="mt-1 block text-xs text-red-700">
+                Couldn't look up predictions. Enter the prediction ID manually.
+              </span>
+            )}
+          </Field>
+
+          <Field label="Action taken" className="md:col-span-2">
+            <textarea
+              name="action_taken"
+              required
+              rows={2}
+              placeholder="e.g. Called student in for a meeting"
+              value={form.action_taken}
+              onChange={updateField}
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Outcome" className="md:col-span-2">
+            <input
+              type="text"
+              name="outcome"
+              placeholder="e.g. Student agreed to attend remedial classes"
+              value={form.outcome}
+              onChange={updateField}
+              className={inputClass}
+            />
+          </Field>
+
+          <Field label="Notes" className="md:col-span-2">
+            <textarea
+              name="notes"
+              rows={3}
+              value={form.notes}
+              onChange={updateField}
+              className={inputClass}
+            />
+          </Field>
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting || predictionStatus === 'loading' || predictionStatus === 'none'}
+          className="mt-5 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+        >
+          {submitting ? 'Saving…' : 'Log Intervention'}
+        </button>
+      </form>
 
       {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
@@ -25,9 +229,8 @@ export default function Interventions() {
           <table className="min-w-full text-sm">
             <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
               <tr>
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Student ID</th>
-                <th className="px-4 py-3">Prediction ID</th>
+                <th className="px-4 py-3">Date Logged</th>
+                <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Action Taken</th>
                 <th className="px-4 py-3">Outcome</th>
                 <th className="px-4 py-3">Notes</th>
@@ -36,20 +239,19 @@ export default function Interventions() {
             <tbody className="divide-y divide-slate-100">
               {interventions.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
                     No interventions logged yet.
                   </td>
                 </tr>
               )}
               {interventions.map((i) => (
-                <tr key={i.intervention_id} className="hover:bg-slate-50">
+                <tr key={i.intervention_id} className="align-top hover:bg-slate-50">
                   <td className="whitespace-nowrap px-4 py-3 text-slate-500">
                     {i.date_logged ? new Date(i.date_logged).toLocaleDateString() : '—'}
                   </td>
-                  <td className="px-4 py-3">{i.student_id ?? '—'}</td>
-                  <td className="px-4 py-3">{i.prediction_id ?? '—'}</td>
-                  <td className="px-4 py-3 font-medium">{i.action_taken}</td>
-                  <td className="px-4 py-3">{i.outcome || '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-medium">{i.full_name || '—'}</td>
+                  <td className="max-w-xs px-4 py-3">{i.action_taken}</td>
+                  <td className="max-w-xs px-4 py-3">{i.outcome || '—'}</td>
                   <td className="max-w-xs px-4 py-3 text-slate-600">{i.notes || '—'}</td>
                 </tr>
               ))}
