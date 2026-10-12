@@ -20,7 +20,8 @@ const FEATURE_FIELDS = [
 ];
 
 // POST /api/predictions/predict (protected)
-// 1. Logs the 8 features as a new academic_records row.
+// 1. If no record_id is given, logs the 8 features as a new academic_records row;
+//    otherwise reuses the existing record_id.
 // 2. Sends those features to the ML service.
 // 3. Logs the ML service's response as a new risk_predictions row, linked to
 //    both the student and the academic_records row it was computed from.
@@ -32,24 +33,28 @@ router.post('/predict', auth, async (req, res) => {
   }
 
   try {
-    const record = await pool.query(
-      `INSERT INTO academic_records
-        (student_id, attendance_rate, cat_score_avg, assignment_submission_rate, late_submission_rate,
-         semester, academic_year, result_label)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING record_id`,
-      [
-        student_id,
-        features.attendance_rate,
-        features.cat_score_avg,
-        features.assignment_submission_rate,
-        features.late_submission_rate,
-        semester,
-        academic_year,
-        result_label,
-      ]
-    );
-    const { record_id } = record.rows[0];
+    let record_id = req.body.record_id;
+
+    if (record_id == null) {
+      const record = await pool.query(
+        `INSERT INTO academic_records
+          (student_id, attendance_rate, cat_score_avg, assignment_submission_rate, late_submission_rate,
+           semester, academic_year, result_label)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         RETURNING record_id`,
+        [
+          student_id,
+          features.attendance_rate,
+          features.cat_score_avg,
+          features.assignment_submission_rate,
+          features.late_submission_rate,
+          semester,
+          academic_year,
+          result_label,
+        ]
+      );
+      record_id = record.rows[0].record_id;
+    }
 
     const { data: prediction } = await axios.post(`${ML_SERVICE_URL}/predict`, features);
 
