@@ -1,6 +1,8 @@
 -- EduAlert sample data
--- Run after schema.sql:  psql -U postgres -d edualert -f database/seed.sql
+-- Run after schema.sql and add_email.sql (which adds students.email):
+--   psql -U postgres -d edualert -f database/seed.sql
 --
+-- Emails follow firstname.lastname@university.ac.ke, using the first and last names.
 -- Rates are percentages (0-100), matching the scale of ml-service/edualert_dataset.csv.
 -- fee_balance_outstanding and prior_unit_failure are booleans in the schema.
 -- result_label is left NULL: the semester is still in progress, so the outcome is unknown.
@@ -13,18 +15,18 @@
 BEGIN;
 
 INSERT INTO students
-    (full_name, programme, year_of_study, units_registered, fee_balance_outstanding, prior_unit_failure)
+    (full_name, email, programme, year_of_study, units_registered, fee_balance_outstanding, prior_unit_failure)
 VALUES
-    ('Brian Otieno Ouma',     'BSc Computer Science',        2, 6, true,  true),
-    ('Faith Wanjiku Kamau',   'BSc Information Technology',  1, 5, true,  false),
-    ('Kevin Kiprotich Rotich','BSc Mathematics',             3, 7, true,  true),
-    ('Mercy Akinyi Odhiambo', 'BSc Computer Science',        1, 6, false, false),
-    ('Dennis Mutua Musyoka',  'BSc Information Technology',  2, 6, true,  false),
-    ('Grace Chebet Langat',   'BSc Mathematics',             4, 5, false, true),
-    ('Joseph Kariuki Njoroge','BSc Computer Science',        3, 7, false, false),
-    ('Esther Nyambura Mwangi','BSc Information Technology',  4, 6, false, false),
-    ('Collins Wafula Barasa', 'BSc Mathematics',             2, 6, true,  false),
-    ('Lilian Moraa Nyaboke',  'BSc Computer Science',        1, 5, false, false);
+    ('Brian Otieno Ouma',     'brian.ouma@university.ac.ke',      'BSc Computer Science',        2, 6, true,  true),
+    ('Faith Wanjiku Kamau',   'faith.kamau@university.ac.ke',     'BSc Information Technology',  1, 5, true,  false),
+    ('Kevin Kiprotich Rotich','kevin.rotich@university.ac.ke',    'BSc Mathematics',             3, 7, true,  true),
+    ('Mercy Akinyi Odhiambo', 'mercy.odhiambo@university.ac.ke',  'BSc Computer Science',        1, 6, false, false),
+    ('Dennis Mutua Musyoka',  'dennis.musyoka@university.ac.ke',  'BSc Information Technology',  2, 6, true,  false),
+    ('Grace Chebet Langat',   'grace.langat@university.ac.ke',    'BSc Mathematics',             4, 5, false, true),
+    ('Joseph Kariuki Njoroge','joseph.njoroge@university.ac.ke',  'BSc Computer Science',        3, 7, false, false),
+    ('Esther Nyambura Mwangi','esther.mwangi@university.ac.ke',   'BSc Information Technology',  4, 6, false, false),
+    ('Collins Wafula Barasa', 'collins.barasa@university.ac.ke',  'BSc Mathematics',             2, 6, true,  false),
+    ('Lilian Moraa Nyaboke',  'lilian.nyaboke@university.ac.ke',  'BSc Computer Science',        1, 5, false, false);
 
 -- One record per student, linked by name so the script doesn't depend on serial IDs.
 INSERT INTO academic_records

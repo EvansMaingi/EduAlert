@@ -12,6 +12,7 @@ const PROGRAMMES = [
 
 const initialForm = {
   full_name: '',
+  email: '',
   programme: PROGRAMMES[0],
   year_of_study: '1',
   units_registered: '5',
@@ -101,6 +102,7 @@ export default function AddStudent() {
       if (!saved.current.student) {
         const { data } = await api.post('/api/students', {
           full_name: form.full_name.trim(),
+          email: form.email.trim(),
           programme: form.programme,
           year_of_study: Number(form.year_of_study),
           units_registered: Number(form.units_registered),
@@ -132,8 +134,9 @@ export default function AddStudent() {
       }
       const record = saved.current.record;
 
+      let prediction;
       try {
-        await api.post('/api/predictions/predict', {
+        ({ data: prediction } = await api.post('/api/predictions/predict', {
           student_id: student.student_id,
           record_id: record.record_id,
           semester: record.semester,
@@ -146,7 +149,7 @@ export default function AddStudent() {
           prior_unit_failure: student.prior_unit_failure ? 1 : 0,
           year_of_study: student.year_of_study,
           units_registered: student.units_registered,
-        });
+        }));
       } catch (err) {
         throw new Error(
           `The student and academic record were saved, but the prediction failed: ${errorMessage(err, 'unknown error')}. ` +
@@ -154,8 +157,18 @@ export default function AddStudent() {
         );
       }
 
-      setSuccess('Student added and prediction generated');
-      setTimeout(() => navigate('/students'), 1500);
+      // "At Risk" predictions email the student; the prediction is saved even if that fails.
+      if (prediction.warning) {
+        setSuccess(`Student added and prediction generated. ${prediction.warning}`);
+        setTimeout(() => navigate('/students'), 4000);
+      } else {
+        setSuccess(
+          prediction.email_sent
+            ? 'Student added and prediction generated. The student is at risk and has been emailed.'
+            : 'Student added and prediction generated'
+        );
+        setTimeout(() => navigate('/students'), 1500);
+      }
     } catch (err) {
       setError(err.response ? errorMessage(err, 'Failed to add student') : err.message);
       setSubmitting(false);
@@ -182,18 +195,28 @@ export default function AddStudent() {
         >
           <legend className="px-1 text-lg font-semibold">Student details</legend>
           <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="md:col-span-2">
-              <Field label="Full name">
-                <input
-                  type="text"
-                  name="full_name"
-                  required
-                  value={form.full_name}
-                  onChange={updateField}
-                  className={inputClass}
-                />
-              </Field>
-            </div>
+            <Field label="Full name">
+              <input
+                type="text"
+                name="full_name"
+                required
+                value={form.full_name}
+                onChange={updateField}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Email">
+              <input
+                type="email"
+                name="email"
+                required
+                placeholder="firstname.lastname@university.ac.ke"
+                value={form.email}
+                onChange={updateField}
+                className={inputClass}
+              />
+            </Field>
 
             <Field label="Programme">
               <select name="programme" value={form.programme} onChange={updateField} className={inputClass}>

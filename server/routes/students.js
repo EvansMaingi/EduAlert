@@ -9,6 +9,7 @@ const router = express.Router();
 router.post('/', auth, requireAdmin, async (req, res) => {
   const {
     full_name,
+    email,
     programme,
     year_of_study,
     units_registered,
@@ -19,16 +20,21 @@ router.post('/', auth, requireAdmin, async (req, res) => {
   if (!full_name || !full_name.trim()) {
     return res.status(400).json({ error: 'full_name is required' });
   }
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return res.status(400).json({ error: 'A valid email is required' });
+  }
 
   try {
     const result = await pool.query(
       `INSERT INTO students
-        (full_name, programme, year_of_study, units_registered, fee_balance_outstanding, prior_unit_failure)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING student_id, full_name, programme, year_of_study, units_registered,
+        (full_name, email, programme, year_of_study, units_registered, fee_balance_outstanding, prior_unit_failure)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING student_id, full_name, email, programme, year_of_study, units_registered,
                  fee_balance_outstanding, prior_unit_failure, created_at`,
       [
         full_name.trim(),
+        normalizedEmail,
         programme,
         year_of_study,
         units_registered,
@@ -38,6 +44,10 @@ router.post('/', auth, requireAdmin, async (req, res) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
+    if (err.code === '23505') {
+      // unique_violation on students.email
+      return res.status(409).json({ error: 'A student with that email already exists' });
+    }
     console.error(err);
     res.status(500).json({ error: 'Failed to create student' });
   }

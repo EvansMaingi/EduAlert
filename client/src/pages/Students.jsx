@@ -73,8 +73,11 @@ export default function Students() {
     setNotice('');
     setRunning(student.student_id, true);
     try {
-      await api.post('/api/predictions/predict', predictionPayload(student));
+      const { data } = await api.post('/api/predictions/predict', predictionPayload(student));
       await loadStudents();
+      // "At Risk" predictions email the student; the prediction is saved even if that fails.
+      if (data.warning) setNotice(`${student.full_name}: ${data.warning}`);
+      else if (data.email_sent) setNotice(`${student.full_name} is at risk and has been emailed.`);
     } catch (err) {
       setNotice(`${student.full_name}: ${errorMessage(err, 'Prediction failed')}`);
     } finally {
@@ -99,6 +102,14 @@ export default function Students() {
     const parts = [`Ran ${eligible.length - failed} of ${eligible.length} predictions.`];
     if (failed) parts.push(`${failed} failed: ${errorMessage(results.find((r) => r.status === 'rejected').reason, 'Prediction failed')}.`);
     if (skipped) parts.push(`${skipped} skipped (no academic record).`);
+
+    const responses = results.filter((r) => r.status === 'fulfilled').map((r) => r.value.data);
+    const emailed = responses.filter((d) => d.email_sent).length;
+    const emailFailures = responses.filter((d) => d.warning);
+    if (emailed) parts.push(`Emailed ${emailed} at-risk ${emailed === 1 ? 'student' : 'students'}.`);
+    if (emailFailures.length) {
+      parts.push(`${emailFailures.length} email(s) failed: ${emailFailures[0].warning}`);
+    }
     setNotice(parts.join(' '));
   }
 
