@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { latestPredictionByStudent } from '../utils/risk';
 
@@ -27,6 +28,8 @@ function Field({ label, children, className = '' }) {
 }
 
 export default function Interventions() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [interventions, setInterventions] = useState(null);
   const [students, setStudents] = useState([]);
   const [error, setError] = useState('');
@@ -58,12 +61,24 @@ export default function Interventions() {
       .catch((err) => setFormError(errorMessage(err, 'Failed to load students')));
   }, [loadInterventions]);
 
+  // "Log Intervention" on the Students page passes the student to pre-select.
+  // Clear it from history afterwards so a page refresh doesn't re-select them.
+  const presetStudentId = location.state?.studentId;
+  useEffect(() => {
+    if (presetStudentId == null) return;
+    selectStudent(String(presetStudentId));
+    navigate(location.pathname, { replace: true, state: null });
+  }, [presetStudentId]);
+
   function updateField(e) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  async function handleStudentChange(e) {
-    const studentId = e.target.value;
+  function handleStudentChange(e) {
+    selectStudent(e.target.value);
+  }
+
+  async function selectStudent(studentId) {
     selectedStudentRef.current = studentId;
     setForm((prev) => ({ ...prev, student_id: studentId, prediction_id: '' }));
 

@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Interventions from './pages/Interventions';
+import AddStudent from './pages/AddStudent';
 
 // Shell shared by every authenticated page.
 function Layout() {
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/students" element={<Students />} />
           <Route path="/interventions" element={<Interventions />} />
+          <Route path="/add-student" element={<AddStudent />} />
         </Route>
       </Route>
 

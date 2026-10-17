@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import { latestPredictionByStudent, riskTier, tierStyles } from '../utils/risk';
+import RiskBar from '../components/RiskBar';
+import StudentDetailModal from '../components/StudentDetailModal';
+import { useAuth } from '../context/AuthContext';
+import { isAtRisk, latestPredictionByStudent, riskTier, tierStyles } from '../utils/risk';
 
 // Builds the POST /api/predictions/predict body from a student row, which
 // carries the features of the student's latest academic record.
@@ -28,11 +32,16 @@ function errorMessage(err, fallback) {
 }
 
 export default function Students() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  const navigate = useNavigate();
   const [rows, setRows] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [runningIds, setRunningIds] = useState(new Set());
   const [runningAll, setRunningAll] = useState(false);
+  const [selectedId, setSelectedId] = useState(null);
+  const closeModal = useCallback(() => setSelectedId(null), []);
 
   const loadStudents = useCallback(async () => {
     try {
@@ -94,19 +103,46 @@ export default function Students() {
   }
 
   const busy = runningAll || runningIds.size > 0;
+  // Lecturers only see students needing intervention, highest risk first.
+  const visibleRows = !rows
+    ? []
+    : isAdmin
+      ? rows
+      : rows
+          .filter((s) => s.prediction && isAtRisk(s.prediction.risk_score))
+          .sort((a, b) => b.prediction.risk_score - a.prediction.risk_score);
+  // Looked up from rows by ID so the modal reflects a refreshed list.
+  const selectedStudent = rows?.find((s) => s.student_id === selectedId);
 
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Students</h1>
-        {rows && rows.length > 0 && (
-          <button
-            onClick={runAllPredictions}
-            disabled={busy}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-          >
-            {runningAll ? 'Running predictions…' : 'Run All Predictions'}
-          </button>
+        <div>
+          <h1 className="text-2xl font-semibold">{isAdmin ? 'Students' : 'At-Risk Students'}</h1>
+          {!isAdmin && (
+            <p className="mt-1 text-sm text-slate-500">
+              High and Medium risk students, highest risk first
+            </p>
+          )}
+        </div>
+        {isAdmin && (
+          <div className="flex flex-wrap gap-3">
+            <Link
+              to="/add-student"
+              className="rounded-md border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
+            >
+              Add Student
+            </Link>
+            {rows && rows.length > 0 && (
+              <button
+                onClick={runAllPredictions}
+                disabled={busy}
+                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+              >
+                {runningAll ? 'Running predictions…' : 'Run All Predictions'}
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -135,19 +171,31 @@ export default function Students() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {rows.length === 0 && (
+              {visibleRows.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-4 py-6 text-center text-slate-500">
-                    No students found.
+                    {isAdmin ? 'No students found.' : 'No at-risk students right now.'}
                   </td>
                 </tr>
               )}
-              {rows.map((s) => {
+              {visibleRows.map((s) => {
                 const tier = riskTier(s.prediction?.risk_score);
                 const hasRecord = s.record_id != null;
                 const running = runningAll || runningIds.has(s.student_id);
                 return (
-                  <tr key={s.student_id} className="hover:bg-slate-50">
+                  <tr
+                    key={s.student_id}
+                    tabIndex={0}
+                    aria-label={`View details for ${s.full_name}`}
+                    onClick={() => setSelectedId(s.student_id)}
+                    onKeyDown={(e) => {
+                      if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                        e.preventDefault();
+                        setSelectedId(s.student_id);
+                      }
+                    }}
+                    className="cursor-pointer hover:bg-slate-50 focus:bg-indigo-50 focus:outline-none"
+                  >
                     <td className="px-4 py-3 text-slate-500">{s.student_id}</td>
                     <td className="px-4 py-3 font-medium">{s.full_name}</td>
                     <td className="px-4 py-3">{s.programme}</td>
@@ -157,7 +205,11 @@ export default function Students() {
                       {s.fee_balance_outstanding ? 'Outstanding' : 'Cleared'}
                     </td>
                     <td className="px-4 py-3">
-                      {s.prediction ? `${s.prediction.risk_percentage}%` : '—'}
+                      {s.prediction ? (
+                        <RiskBar score={s.prediction.risk_score} percentage={s.prediction.risk_percentage} />
+                      ) : (
+                        '—'
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       {tier ? (
@@ -169,14 +221,29 @@ export default function Students() {
                       )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
-                      <button
-                        onClick={() => runPrediction(s)}
-                        disabled={!hasRecord || running || runningAll}
-                        title={hasRecord ? undefined : 'No academic record for this student'}
-                        className="rounded-md border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        {running ? 'Running…' : 'Run Prediction'}
-                      </button>
+                      {isAdmin ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            runPrediction(s);
+                          }}
+                          disabled={!hasRecord || running || runningAll}
+                          title={hasRecord ? undefined : 'No academic record for this student'}
+                          className="rounded-md border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {running ? 'Running…' : 'Run Prediction'}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate('/interventions', { state: { studentId: s.student_id } });
+                          }}
+                          className="rounded-md border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50"
+                        >
+                          Log Intervention
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );
@@ -184,6 +251,10 @@ export default function Students() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {selectedStudent && (
+        <StudentDetailModal student={selectedStudent} onClose={closeModal} />
       )}
     </div>
   );

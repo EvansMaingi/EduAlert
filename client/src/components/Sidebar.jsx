@@ -1,12 +1,24 @@
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-const links = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/students', label: 'Students' },
-  { to: '/interventions', label: 'Interventions' },
-];
+const linksByRole = {
+  admin: [
+    { to: '/dashboard', label: 'Dashboard' },
+    { to: '/students', label: 'Students' },
+    { to: '/add-student', label: 'Add Student' },
+    { to: '/interventions', label: 'Interventions' },
+  ],
+  lecturer: [
+    { to: '/dashboard', label: 'Dashboard' },
+    { to: '/students', label: 'At-Risk Students' },
+    { to: '/interventions', label: 'Interventions' },
+  ],
+};
 
 export default function Sidebar() {
+  const { user } = useAuth();
+  const links = user?.role === 'admin' ? linksByRole.admin : linksByRole.lecturer;
+
   return (
     <aside className="w-52 shrink-0 border-r border-slate-200 bg-white p-4">
       <nav className="flex flex-col gap-1">

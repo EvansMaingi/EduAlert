@@ -1,8 +1,47 @@
 const express = require('express');
 const pool = require('../db');
 const auth = require('../middleware/auth');
+const requireAdmin = require('../middleware/requireAdmin');
 
 const router = express.Router();
+
+// POST /api/students (protected, admin only)
+router.post('/', auth, requireAdmin, async (req, res) => {
+  const {
+    full_name,
+    programme,
+    year_of_study,
+    units_registered,
+    fee_balance_outstanding,
+    prior_unit_failure,
+  } = req.body;
+
+  if (!full_name || !full_name.trim()) {
+    return res.status(400).json({ error: 'full_name is required' });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO students
+        (full_name, programme, year_of_study, units_registered, fee_balance_outstanding, prior_unit_failure)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING student_id, full_name, programme, year_of_study, units_registered,
+                 fee_balance_outstanding, prior_unit_failure, created_at`,
+      [
+        full_name.trim(),
+        programme,
+        year_of_study,
+        units_registered,
+        Boolean(fee_balance_outstanding),
+        Boolean(prior_unit_failure),
+      ]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create student' });
+  }
+});
 
 // GET /api/students (protected)
 // Each student includes the features from their latest academic_records row

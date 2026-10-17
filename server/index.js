@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth');
 const studentsRoutes = require('./routes/students');
 const predictionsRoutes = require('./routes/predictions');
 const interventionsRoutes = require('./routes/interventions');
+const academicRecordsRoutes = require('./routes/academic-records');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,6 +18,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/students', studentsRoutes);
 app.use('/api/predictions', predictionsRoutes);
 app.use('/api/interventions', interventionsRoutes);
+app.use('/api/academic-records', academicRecordsRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
