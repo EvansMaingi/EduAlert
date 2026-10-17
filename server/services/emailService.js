@@ -1,5 +1,6 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
 const nodemailer = require('nodemailer');
+const { riskLevel, weakAreas } = require('./riskInsights');
 
 // Gmail SMTP. EMAIL_PASS must be a Gmail App Password (requires 2FA on the
 // account), not the normal account password.
@@ -15,35 +16,6 @@ const transporter = nodemailer.createTransport({
   socketTimeout: 15000,
 });
 
-// Thresholds below which (or above which, for late submissions) an area is
-// flagged as weak in the email. Rates are percentages (0-100).
-const WEAK_AREA_RULES = [
-  {
-    field: 'attendance_rate',
-    label: 'Class attendance',
-    isWeak: (v) => v < 70,
-    advice: 'below the expected 70%',
-  },
-  {
-    field: 'cat_score_avg',
-    label: 'CAT score average',
-    isWeak: (v) => v < 50,
-    advice: 'below 50%',
-  },
-  {
-    field: 'assignment_submission_rate',
-    label: 'Assignment submission',
-    isWeak: (v) => v < 75,
-    advice: 'below 75% of assignments submitted',
-  },
-  {
-    field: 'late_submission_rate',
-    label: 'Late submissions',
-    isWeak: (v) => v > 30,
-    advice: 'more than 30% of work submitted late',
-  },
-];
-
 const NEXT_STEPS = [
   'Visit your academic advisor',
   'Attend all remaining classes this semester',
@@ -51,12 +23,7 @@ const NEXT_STEPS = [
   'Contact your lecturer for additional support',
 ];
 
-// Same tiers as the client (client/src/utils/risk.js).
-function riskLevel(score) {
-  if (score >= 0.7) return 'High';
-  if (score >= 0.4) return 'Medium';
-  return 'Low';
-}
+const STUDENT_PORTAL_URL = 'http://localhost:5173/student-login';
 
 const LEVEL_COLORS = { High: '#dc2626', Medium: '#b45309', Low: '#047857' };
 
@@ -77,27 +44,6 @@ function isConfigured() {
       EMAIL_USER !== 'your_gmail@gmail.com' &&
       EMAIL_PASS !== 'your_gmail_app_password'
   );
-}
-
-// student: row from students joined with their latest academic record
-//          (full_name, email, attendance_rate, cat_score_avg, ...,
-//           fee_balance_outstanding, prior_unit_failure)
-// prediction: latest risk_predictions row (risk_score, risk_percentage)
-function weakAreas(student) {
-  const areas = [];
-  for (const rule of WEAK_AREA_RULES) {
-    const value = student[rule.field];
-    if (value != null && rule.isWeak(Number(value))) {
-      areas.push(`${rule.label}: ${Number(value)}% (${rule.advice})`);
-    }
-  }
-  if (student.fee_balance_outstanding) {
-    areas.push('Outstanding fee balance, which can affect exam eligibility');
-  }
-  if (student.prior_unit_failure) {
-    areas.push('A previously failed unit');
-  }
-  return areas;
 }
 
 function buildHtml(student, prediction, intervention = null) {
@@ -143,6 +89,12 @@ ${
 }
         <h3 style="margin:20px 0 0;font-size:16px;">Recommended next steps</h3>
         <ul style="margin:8px 0 0;padding-left:20px;">${stepsHtml}</ul>
+
+        <p style="margin:20px 0 0;padding:12px 16px;background:#eef2ff;border-radius:6px;">
+          Log in to your EduAlert Student Portal at
+          <a href="${STUDENT_PORTAL_URL}" style="color:#4338ca;">${STUDENT_PORTAL_URL}</a>
+          to acknowledge this notification and request support.
+        </p>
       </div>
       <div style="padding:16px 24px;background:#f1f5f9;font-size:12px;color:#64748b;">
         This is an automated notification from EduAlert - Student Academic Welfare System

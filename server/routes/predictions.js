@@ -13,7 +13,7 @@ const AT_RISK_LABEL = 'At Risk';
 
 // Emails the student about their prediction. The weak-areas breakdown uses
 // the features this prediction was computed from.
-// Returns null on success, or a reason string if the email wasn't sent.
+// Returns { recipient } on success, or { error } with a reason if the email wasn't sent.
 async function notifyStudent(prediction, features) {
   try {
     const result = await pool.query(
@@ -23,7 +23,7 @@ async function notifyStudent(prediction, features) {
       [prediction.student_id]
     );
     const student = result.rows[0];
-    if (!student) return 'student not found';
+    if (!student) return { error: 'student not found' };
 
     await sendRiskNotification(
       {
@@ -35,10 +35,31 @@ async function notifyStudent(prediction, features) {
       },
       prediction
     );
-    return null;
+    return { recipient: student.email };
   } catch (err) {
     console.error('Risk notification email failed:', err.message);
-    return err.message;
+    return { error: err.message };
+  }
+}
+
+// Records a sent email in the notifications table. Returns false if the insert
+// fails (the email has already gone, so the caller only reports a warning).
+async function logNotification(prediction, recipient) {
+  try {
+    await pool.query(
+      `INSERT INTO notifications (student_id, prediction_id, message, email_sent, email_recipient)
+       VALUES ($1, $2, $3, true, $4)`,
+      [
+        prediction.student_id,
+        prediction.prediction_id,
+        `Risk notification email sent to student. Risk level: ${prediction.risk_label} - ${prediction.risk_percentage}%`,
+        recipient,
+      ]
+    );
+    return true;
+  } catch (err) {
+    console.error('Failed to log notification:', err.message);
+    return false;
   }
 }
 
@@ -141,12 +162,20 @@ router.post('/predict', auth, async (req, res) => {
     });
   }
 
-  const emailError = await notifyStudent(saved, features);
+  const { error: emailError, recipient } = await notifyStudent(saved, features);
   if (emailError) {
     return res.status(201).json({
       ...saved,
       email_sent: false,
       warning: `Prediction saved but email notification failed: ${emailError}`,
+    });
+  }
+
+  if (!(await logNotification(saved, recipient))) {
+    return res.status(201).json({
+      ...saved,
+      email_sent: true,
+      warning: 'Email sent, but it could not be recorded in the notification log',
     });
   }
   res.status(201).json({ ...saved, email_sent: true });

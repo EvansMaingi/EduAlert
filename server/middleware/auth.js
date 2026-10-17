@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 
 // Verifies the JWT in the Authorization header ("Bearer <token>") and attaches
 // the decoded payload (userId, role) to req.user.
+// Staff only: Student Portal tokens are rejected here (they use studentAuth).
 function auth(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -14,6 +15,9 @@ function auth(req, res, next) {
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
       return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+    if (decoded.role === 'student') {
+      return res.status(403).json({ error: 'Staff access required' });
     }
     req.user = decoded;
     next();

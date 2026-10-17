@@ -11,6 +11,15 @@ const emptyForm = {
   notes: '',
 };
 
+const STATUSES = ['Pending', 'Contacted', 'In Progress', 'Resolved'];
+
+const statusStyles = {
+  Pending: 'bg-slate-100 text-slate-700',
+  Contacted: 'bg-blue-100 text-blue-700',
+  'In Progress': 'bg-amber-100 text-amber-800',
+  Resolved: 'bg-emerald-100 text-emerald-700',
+};
+
 const inputClass =
   'w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500';
 
@@ -42,6 +51,31 @@ export default function Interventions() {
   // The student whose prediction lookup is current, so a slow response for a
   // previously selected student can't overwrite the field.
   const selectedStudentRef = useRef('');
+  const [updatingIds, setUpdatingIds] = useState(new Set());
+  const [statusError, setStatusError] = useState('');
+
+  function setUpdating(id, updating) {
+    setUpdatingIds((prev) => {
+      const next = new Set(prev);
+      updating ? next.add(id) : next.delete(id);
+      return next;
+    });
+  }
+
+  async function updateStatus(interventionId, status) {
+    setStatusError('');
+    setUpdating(interventionId, true);
+    try {
+      const { data } = await api.patch(`/api/interventions/${interventionId}/status`, { status });
+      setInterventions((prev) =>
+        prev.map((i) => (i.intervention_id === interventionId ? { ...i, status: data.status } : i))
+      );
+    } catch (err) {
+      setStatusError(errorMessage(err, 'Failed to update status'));
+    } finally {
+      setUpdating(interventionId, false);
+    }
+  }
 
   const loadInterventions = useCallback(async () => {
     try {
@@ -237,6 +271,10 @@ export default function Interventions() {
 
       {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
+      {statusError && (
+        <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{statusError}</p>
+      )}
+
       {!error && !interventions && <p className="text-sm text-slate-500">Loading…</p>}
 
       {interventions && (
@@ -249,12 +287,13 @@ export default function Interventions() {
                 <th className="px-4 py-3">Action Taken</th>
                 <th className="px-4 py-3">Outcome</th>
                 <th className="px-4 py-3">Notes</th>
+                <th className="px-4 py-3">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {interventions.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
                     No interventions logged yet.
                   </td>
                 </tr>
@@ -268,6 +307,30 @@ export default function Interventions() {
                   <td className="max-w-xs px-4 py-3">{i.action_taken}</td>
                   <td className="max-w-xs px-4 py-3">{i.outcome || '—'}</td>
                   <td className="max-w-xs px-4 py-3 text-slate-600">{i.notes || '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          statusStyles[i.status] || statusStyles.Pending
+                        }`}
+                      >
+                        {i.status || 'Pending'}
+                      </span>
+                      <select
+                        aria-label={`Update status for ${i.full_name || 'intervention'}`}
+                        value={i.status || 'Pending'}
+                        disabled={updatingIds.has(i.intervention_id)}
+                        onChange={(e) => updateStatus(i.intervention_id, e.target.value)}
+                        className="rounded-md border border-slate-300 px-2 py-1 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:opacity-60"
+                      >
+                        {STATUSES.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -7,6 +7,10 @@ import Dashboard from './pages/Dashboard';
 import Students from './pages/Students';
 import Interventions from './pages/Interventions';
 import AddStudent from './pages/AddStudent';
+import Notifications from './pages/Notifications';
+import StudentRoute from './components/StudentRoute';
+import StudentLogin from './pages/StudentLogin';
+import StudentPortal from './pages/StudentPortal';
 
 // Shell shared by every authenticated page.
 function Layout() {
@@ -29,12 +33,19 @@ export default function App() {
       <Route path="/" element={<Login />} />
       <Route path="/login" element={<Navigate to="/" replace />} />
 
+      {/* Student Portal: its own login and token, outside the staff layout. */}
+      <Route path="/student-login" element={<StudentLogin />} />
+      <Route element={<StudentRoute />}>
+        <Route path="/student-portal" element={<StudentPortal />} />
+      </Route>
+
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/students" element={<Students />} />
           <Route path="/interventions" element={<Interventions />} />
           <Route path="/add-student" element={<AddStudent />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Route>
       </Route>
 

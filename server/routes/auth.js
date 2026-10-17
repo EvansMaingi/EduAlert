@@ -74,4 +74,52 @@ router.post('/login', async (req, res) => {
   }
 });
 
+// POST /api/auth/student-login
+// Student Portal login, against the students table (not users).
+router.post('/student-login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'email and password are required' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT student_id, full_name, email, password_hash FROM students WHERE lower(email) = lower($1)',
+      [String(email).trim()]
+    );
+    const student = result.rows[0];
+
+    // No account, or no portal password set yet: same message, so the
+    // response doesn't reveal which emails belong to students.
+    if (!student || !student.password_hash) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const valid = await bcrypt.compare(password, student.password_hash);
+    if (!valid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { student_id: student.student_id, role: 'student', full_name: student.full_name },
+      'edualert_jwt_secret_2025',
+      { expiresIn: '1d' }
+    );
+
+    res.json({
+      token,
+      student: {
+        student_id: student.student_id,
+        full_name: student.full_name,
+        email: student.email,
+        role: 'student',
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
 module.exports = router;

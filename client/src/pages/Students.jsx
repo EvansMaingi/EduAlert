@@ -38,6 +38,7 @@ export default function Students() {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [deletingIds, setDeletingIds] = useState(new Set());
   const [runningIds, setRunningIds] = useState(new Set());
   const [runningAll, setRunningAll] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -67,6 +68,30 @@ export default function Students() {
       running ? next.add(id) : next.delete(id);
       return next;
     });
+  }
+
+  async function deleteStudent(student) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${student.full_name}? This will also delete all their records and predictions.`
+    );
+    if (!confirmed) return;
+
+    setNotice('');
+    setDeletingIds((prev) => new Set(prev).add(student.student_id));
+    try {
+      await api.delete(`/api/students/${student.student_id}`);
+      if (selectedId === student.student_id) setSelectedId(null);
+      await loadStudents();
+      setNotice(`${student.full_name} was deleted.`);
+    } catch (err) {
+      setNotice(`${student.full_name}: ${errorMessage(err, 'Failed to delete student')}`);
+    } finally {
+      setDeletingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(student.student_id);
+        return next;
+      });
+    }
   }
 
   async function runPrediction(student) {
@@ -244,7 +269,20 @@ export default function Students() {
                         >
                           {running ? 'Running…' : 'Run Prediction'}
                         </button>
-                      ) : (
+                      ) : null}
+                      {isAdmin && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteStudent(s);
+                          }}
+                          disabled={running || runningAll || deletingIds.has(s.student_id)}
+                          className="ml-2 rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          {deletingIds.has(s.student_id) ? 'Deleting…' : 'Delete'}
+                        </button>
+                      )}
+                      {!isAdmin && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();

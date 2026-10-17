@@ -13,6 +13,7 @@ const PROGRAMMES = [
 const initialForm = {
   full_name: '',
   email: '',
+  student_number: '',
   programme: PROGRAMMES[0],
   year_of_study: '1',
   units_registered: '5',
@@ -50,7 +51,7 @@ function Checkbox({ label, name, checked, onChange }) {
         name={name}
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+        className="h-4 w-4 accent-indigo-600"
       />
       {label}
     </label>
@@ -103,6 +104,7 @@ export default function AddStudent() {
         const { data } = await api.post('/api/students', {
           full_name: form.full_name.trim(),
           email: form.email.trim(),
+          student_number: form.student_number.trim() || null,
           programme: form.programme,
           year_of_study: Number(form.year_of_study),
           units_registered: Number(form.units_registered),
@@ -213,6 +215,17 @@ export default function AddStudent() {
                 required
                 placeholder="firstname.lastname@university.ac.ke"
                 value={form.email}
+                onChange={updateField}
+                className={inputClass}
+              />
+            </Field>
+
+            <Field label="Student number (optional)">
+              <input
+                type="text"
+                name="student_number"
+                placeholder="e.g. SCT211-0001/2024"
+                value={form.student_number}
                 onChange={updateField}
                 className={inputClass}
               />
