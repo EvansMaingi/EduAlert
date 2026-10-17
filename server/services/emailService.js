@@ -154,8 +154,8 @@ ${
 
 // Sends the risk notification to the student's email address.
 // intervention is optional; without it the "Action taken" section is left out.
-// If EMAIL_TEST_RECIPIENT is set, every email goes there instead (for testing
-// without emailing real students). Throws if the email can't be sent.
+// If EMAIL_TEST_RECIPIENT is set, it is CC'd on every email so a copy goes
+// there too. Throws if the email can't be sent.
 async function sendRiskNotification(student, prediction, intervention = null) {
   if (!isConfigured()) {
     throw new Error('Email is not configured (set EMAIL_USER and EMAIL_PASS in server/.env)');
@@ -167,13 +167,11 @@ async function sendRiskNotification(student, prediction, intervention = null) {
     throw new Error('Student has no prediction');
   }
 
-  const testRecipient = process.env.EMAIL_TEST_RECIPIENT;
-  const subject = 'EduAlert - Academic Risk Notification';
-
   return transporter.sendMail({
     from: `"EduAlert" <${process.env.EMAIL_USER}>`,
-    to: testRecipient || student.email,
-    subject: testRecipient ? `[TEST - for ${student.email}] ${subject}` : subject,
+    to: student.email,
+    cc: process.env.EMAIL_TEST_RECIPIENT || undefined,
+    subject: 'EduAlert - Academic Risk Notification',
     html: buildHtml(student, prediction, intervention),
   });
 }
