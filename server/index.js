@@ -10,6 +10,7 @@ const academicRecordsRoutes = require('./routes/academic-records');
 const notificationsRoutes = require('./routes/notifications');
 const { router: studentPortalRoutes } = require('./routes/student-portal');
 const lecturerRoutes = require('./routes/lecturer');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -25,6 +26,7 @@ app.use('/api/academic-records', academicRecordsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/student-portal', studentPortalRoutes);
 app.use('/api/lecturer', lecturerRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 

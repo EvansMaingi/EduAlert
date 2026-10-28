@@ -7,12 +7,14 @@ const linksByRole = {
     { to: '/students', label: 'Students' },
     { to: '/add-student', label: 'Add Student' },
     { to: '/interventions', label: 'Interventions' },
+    { to: '/support-requests', label: 'Support Requests' },
     { to: '/notifications', label: 'Notifications' },
   ],
   lecturer: [
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/students', label: 'At-Risk Students' },
     { to: '/interventions', label: 'Interventions' },
+    { to: '/support-requests', label: 'Support Requests' },
   ],
 };
 

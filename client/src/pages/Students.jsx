@@ -70,6 +70,18 @@ export default function Students() {
     });
   }
 
+  // Puts the row returned by an edit in the modal into the list, so the risk
+  // score and level update without reloading. If the re-run prediction failed,
+  // the student keeps their previous prediction.
+  function applySavedStudent(updated) {
+    const { prediction, prediction_error, ...student } = updated;
+    setRows((prev) =>
+      prev.map((s) =>
+        s.student_id === student.student_id ? { ...student, prediction: prediction || s.prediction } : s
+      )
+    );
+  }
+
   async function deleteStudent(student) {
     const confirmed = window.confirm(
       `Are you sure you want to delete ${student.full_name}? This will also delete all their records and predictions.`
@@ -303,7 +315,12 @@ export default function Students() {
       )}
 
       {selectedStudent && (
-        <StudentDetailModal student={selectedStudent} onClose={closeModal} />
+        <StudentDetailModal
+          student={selectedStudent}
+          onClose={closeModal}
+          canEdit={isAdmin}
+          onSaved={applySavedStudent}
+        />
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import Students from './pages/Students';
 import Interventions from './pages/Interventions';
 import AddStudent from './pages/AddStudent';
 import Notifications from './pages/Notifications';
+import SupportRequests from './pages/SupportRequests';
 import StudentRoute from './components/StudentRoute';
 import StudentLogin from './pages/StudentLogin';
 import StudentPortal from './pages/StudentPortal';
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/interventions" element={<Interventions />} />
           <Route path="/add-student" element={<AddStudent />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/support-requests" element={<SupportRequests />} />
         </Route>
       </Route>
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import studentApi, { getStudentToken, saveStudentSession } from '../api/studentApi';
 
 export default function StudentLogin() {
@@ -24,6 +25,20 @@ export default function StudentLogin() {
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to reach the server');
       setSubmitting(false);
+    }
+  }
+
+  // The server only accepts emails that already exist in the students table.
+  async function handleGoogleLogin(credentialResponse) {
+    setError('');
+    try {
+      const { data } = await studentApi.post('/api/auth/student-google', {
+        credential: credentialResponse.credential,
+      });
+      saveStudentSession(data.token, data.student);
+      navigate('/student-portal', { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Google sign-in failed');
     }
   }
 
@@ -72,6 +87,17 @@ export default function StudentLogin() {
         >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
+
+        <div className="my-4 text-center text-sm text-slate-500">or</div>
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => setError('Google sign-in failed')}
+            width="320"
+            text="signin_with"
+            shape="rectangular"
+          />
+        </div>
 
         <p className="mt-6 text-center text-sm text-slate-500">
           Staff member?{' '}

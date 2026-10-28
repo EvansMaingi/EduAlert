@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 
 export default function Login() {
-  const { login, isAuthenticated } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,6 +26,16 @@ export default function Login() {
       setError(err.response?.data?.error || 'Unable to reach the server');
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleGoogleLogin(credentialResponse) {
+    setError('');
+    try {
+      await loginWithGoogle(credentialResponse.credential);
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      setError(err.response?.data?.error || 'Google sign-in failed');
     }
   }
 
@@ -70,6 +81,17 @@ export default function Login() {
         >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
+
+        <div className="my-4 text-center text-sm text-slate-500">or</div>
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleLogin}
+            onError={() => setError('Google sign-in failed')}
+            width="320"
+            text="signin_with"
+            shape="rectangular"
+          />
+        </div>
 
         <p className="mt-6 text-center text-sm text-slate-500">
           Are you a student?{' '}

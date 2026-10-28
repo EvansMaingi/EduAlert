@@ -24,6 +24,17 @@ export function AuthProvider({ children }) {
     return data.user;
   }
 
+  // Sign in with Google: credential is the ID token from the Google button.
+  // The server only accepts emails that already exist in the users table.
+  async function loginWithGoogle(credential) {
+    const { data } = await api.post('/api/auth/google', { credential });
+    localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+    setToken(data.token);
+    setUser(data.user);
+    return data.user;
+  }
+
   function logout() {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -32,7 +43,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, isAuthenticated: Boolean(token), login, logout }}>
+    <AuthContext.Provider value={{ token, user, isAuthenticated: Boolean(token), login, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );

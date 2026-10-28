@@ -2,8 +2,21 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const pool = require('../db');
+const { OAuth2Client } = require('google-auth-library');
+
+const GOOGLE_CLIENT_ID = '352646921322-a4ff3ctg4l9itnaac98qupdaki75t696.apps.googleusercontent.com';
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const router = express.Router();
+
+// Verifies a Google Sign-In credential (ID token) and returns the account's
+// email, or null if the token is invalid or the email isn't verified by Google.
+async function verifiedGoogleEmail(credential) {
+  if (!credential) return null;
+  const ticket = await googleClient.verifyIdToken({ idToken: credential, audience: GOOGLE_CLIENT_ID });
+  const { email, email_verified } = ticket.getPayload();
+  return email && email_verified ? email : null;
+}
 
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
@@ -67,6 +80,90 @@ router.post('/login', async (req, res) => {
     res.json({
       token,
       user: { user_id: user.user_id, full_name: user.full_name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// POST /api/auth/google
+// Staff Sign in with Google: existing users only (users table), never creates one.
+// Issues the same token as /login so the rest of the app treats both the same.
+router.post('/google', async (req, res) => {
+  let email;
+  try {
+    email = await verifiedGoogleEmail(req.body.credential);
+  } catch (err) {
+    console.error('Google auth error:', err.message);
+    return res.status(401).json({ error: 'Invalid Google token' });
+  }
+  if (!email) {
+    return res.status(401).json({ error: 'Invalid Google token' });
+  }
+
+  try {
+    const result = await pool.query('SELECT * FROM users WHERE lower(email) = lower($1)', [email]);
+    const user = result.rows[0];
+    if (!user) {
+      return res
+        .status(401)
+        .json({ error: 'No account found for this email. Contact your administrator.' });
+    }
+
+    const token = jwt.sign({ user_id: user.user_id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: '24h',
+    });
+    res.json({
+      token,
+      user: { user_id: user.user_id, full_name: user.full_name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// POST /api/auth/student-google
+// Student Sign in with Google: existing students only (students table), never creates one.
+// Issues the same token as /student-login.
+router.post('/student-google', async (req, res) => {
+  let email;
+  try {
+    email = await verifiedGoogleEmail(req.body.credential);
+  } catch (err) {
+    console.error('Student Google auth error:', err.message);
+    return res.status(401).json({ error: 'Invalid Google token' });
+  }
+  if (!email) {
+    return res.status(401).json({ error: 'Invalid Google token' });
+  }
+
+  try {
+    const result = await pool.query(
+      'SELECT student_id, full_name, email FROM students WHERE lower(email) = lower($1)',
+      [email]
+    );
+    const student = result.rows[0];
+    if (!student) {
+      return res
+        .status(401)
+        .json({ error: 'No student account found for this email. Contact your administrator.' });
+    }
+
+    const token = jwt.sign(
+      { student_id: student.student_id, role: 'student', full_name: student.full_name },
+      process.env.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+    res.json({
+      token,
+      student: {
+        student_id: student.student_id,
+        full_name: student.full_name,
+        email: student.email,
+        role: 'student',
+      },
     });
   } catch (err) {
     console.error(err);
