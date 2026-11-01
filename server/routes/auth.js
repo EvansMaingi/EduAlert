@@ -4,8 +4,8 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db');
 const { OAuth2Client } = require('google-auth-library');
 
-const GOOGLE_CLIENT_ID = '352646921322-a4ff3ctg4l9itnaac98qupdaki75t696.apps.googleusercontent.com';
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const router = express.Router();
 

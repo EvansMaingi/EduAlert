@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { initials } from '../utils/initials';
 
 const linksByRole = {
   admin: [
@@ -21,17 +22,30 @@ const linksByRole = {
 export default function Sidebar() {
   const { user } = useAuth();
   const links = user?.role === 'admin' ? linksByRole.admin : linksByRole.lecturer;
+  const name = user?.full_name || user?.email || '';
 
   return (
-    <aside className="w-52 shrink-0 border-r border-slate-200 bg-white p-4">
-      <nav className="flex flex-col gap-1">
+    <aside className="flex w-56 shrink-0 flex-col bg-sidebar text-white">
+      <div className="flex items-center gap-3 px-5 py-5">
+        <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/40 bg-white/20 font-display text-sm font-extrabold">
+          EA
+        </span>
+        <span>
+          <span className="block font-display text-base font-bold leading-tight">EduAlert</span>
+          <span className="block text-xs text-white/80">Early warning system</span>
+        </span>
+      </div>
+
+      <nav className="flex flex-1 flex-col gap-1 px-3">
         {links.map(({ to, label }) => (
           <NavLink
             key={to}
             to={to}
             className={({ isActive }) =>
-              `rounded-md px-3 py-2 text-sm font-medium ${
-                isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100'
+              `relative rounded-lg px-3 py-2 text-sm font-medium ${
+                isActive
+                  ? 'bg-white/20 text-white before:absolute before:inset-y-1.5 before:left-0 before:w-[3px] before:rounded-r before:bg-white'
+                  : 'text-[rgba(191,219,254,.75)] hover:bg-white/10 hover:text-white'
               }`
             }
           >
@@ -39,6 +53,18 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {user && (
+        <div className="m-3 flex items-center gap-3 rounded-lg bg-white/10 px-3 py-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/50 bg-white/[.22] text-xs font-semibold">
+            {initials(name)}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-medium">{name}</span>
+            <span className="block text-xs capitalize text-white/75">{user.role}</span>
+          </span>
+        </div>
+      )}
     </aside>
   );
 }

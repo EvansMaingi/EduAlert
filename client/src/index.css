@@ -1,5 +1,61 @@
 @import "tailwindcss";
 
+/* Design tokens */
+:root {
+  --bg: #eef2f9;
+  --surface: #ffffff;
+  --surface-2: #f5f8ff;
+  --sidebar: #1d4ed8;
+  --sidebar-active: #1e40af;
+  --border: #dbeafe;
+  --border-subtle: #eff6ff;
+  --fg: #1e3a5f;
+  --fg-2: #334155;
+  --fg-muted: #5b7fa6;
+  --fg-inv: #f8fafc;
+  --fg-inv-2: #bfdbfe;
+  --blue-500: #2563eb;
+  --blue-400: #3b82f6;
+  --blue-300: #93c5fd;
+  --red-500: #ef4444;
+  --amber-500: #f59e0b;
+  --green-500: #16a34a;
+  --shadow-sm: 0 1px 4px rgba(37,99,235,.08);
+  --shadow-md: 0 4px 16px rgba(37,99,235,.10);
+  --shadow-lg: 0 8px 32px rgba(37,99,235,.12);
+}
+
+/* The tokens as Tailwind utilities: bg-surface, text-fg-muted, border-line, … */
+@theme inline {
+  --color-app: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-line: var(--border);
+  --color-line-subtle: var(--border-subtle);
+  --color-fg: var(--fg);
+  --color-fg-2: var(--fg-2);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-inv: var(--fg-inv);
+  --color-fg-inv-2: var(--fg-inv-2);
+  --color-brand: var(--blue-500);
+  --color-brand-400: var(--blue-400);
+  --color-brand-300: var(--blue-300);
+  --color-risk-high: var(--red-500);
+  --color-risk-medium: var(--amber-500);
+  --color-risk-low: var(--green-500);
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
 body {
-  @apply bg-slate-50 text-slate-800 antialiased;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  @apply antialiased;
+}
+
+h1, h2, h3, .metric-value, .page-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 }

@@ -28,7 +28,7 @@ const initialForm = {
 };
 
 const inputClass =
-  'w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500';
+  'w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand';
 
 function errorMessage(err, fallback) {
   return err.response?.data?.error || fallback;
@@ -37,7 +37,7 @@ function errorMessage(err, fallback) {
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
+      <span className="mb-1 block text-sm font-medium text-fg-2">{label}</span>
       {children}
     </label>
   );
@@ -45,13 +45,13 @@ function Field({ label, children }) {
 
 function Checkbox({ label, name, checked, onChange }) {
   return (
-    <label className="flex items-center gap-2 text-sm text-slate-700">
+    <label className="flex items-center gap-2 text-sm text-fg-2">
       <input
         type="checkbox"
         name={name}
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 accent-indigo-600"
+        className="h-4 w-4 accent-brand"
       />
       {label}
     </label>
@@ -185,15 +185,15 @@ export default function AddStudent() {
     <div className="max-w-3xl">
       <h1 className="mb-6 text-2xl font-semibold">Add Student</h1>
 
-      {error && <p className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
       {success && (
-        <p className="mb-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</p>
+        <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</p>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <fieldset
           disabled={studentSaved}
-          className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm disabled:opacity-70"
+          className="rounded-xl border border-line bg-surface p-6 shadow-sm disabled:opacity-70"
         >
           <legend className="px-1 text-lg font-semibold">Student details</legend>
           <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -288,7 +288,7 @@ export default function AddStudent() {
 
         <fieldset
           disabled={recordSaved}
-          className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm disabled:opacity-70"
+          className="rounded-xl border border-line bg-surface p-6 shadow-sm disabled:opacity-70"
         >
           <legend className="px-1 text-lg font-semibold">Academic record</legend>
           <div className="mt-2 grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -340,7 +340,7 @@ export default function AddStudent() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-md bg-indigo-600 px-5 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-5 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
         >
           {submitting ? 'Saving…' : studentSaved ? 'Retry' : 'Add Student'}
         </button>

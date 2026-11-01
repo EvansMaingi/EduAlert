@@ -43,46 +43,46 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
+        className="w-full max-w-sm rounded-xl border border-line bg-surface p-8 shadow-sm"
       >
-        <h1 className="text-2xl font-semibold text-indigo-700">EduAlert</h1>
-        <p className="mb-6 mt-1 text-sm text-slate-500">Sign in to continue</p>
+        <h1 className="text-2xl font-semibold text-brand">EduAlert</h1>
+        <p className="mb-6 mt-1 text-sm text-fg-muted">Sign in to continue</p>
 
         {error && (
-          <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+          <div className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
         )}
 
         <label className="mb-4 block">
-          <span className="mb-1 block text-sm font-medium text-slate-700">Email</span>
+          <span className="mb-1 block text-sm font-medium text-fg-2">Email</span>
           <input
             type="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           />
         </label>
 
         <label className="mb-6 block">
-          <span className="mb-1 block text-sm font-medium text-slate-700">Password</span>
+          <span className="mb-1 block text-sm font-medium text-fg-2">Password</span>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
           />
         </label>
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-md bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+          className="w-full rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
         >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
 
-        <div className="my-4 text-center text-sm text-slate-500">or</div>
+        <div className="my-4 text-center text-sm text-fg-muted">or</div>
         <div className="flex justify-center">
           <GoogleLogin
             onSuccess={handleGoogleLogin}
@@ -93,9 +93,9 @@ export default function Login() {
           />
         </div>
 
-        <p className="mt-6 text-center text-sm text-slate-500">
+        <p className="mt-6 text-center text-sm text-fg-muted">
           Are you a student?{' '}
-          <Link to="/student-login" className="font-medium text-indigo-700 hover:underline">
+          <Link to="/student-login" className="font-medium text-brand hover:underline">
             Click here
           </Link>
         </p>

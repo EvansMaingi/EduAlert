@@ -7,7 +7,7 @@ import { riskTier, tierStyles } from '../utils/risk';
 function Section({ title, children }) {
   return (
     <section>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</h3>
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-fg-muted">{title}</h3>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">{children}</dl>
     </section>
   );
@@ -16,8 +16,8 @@ function Section({ title, children }) {
 function Item({ label, children }) {
   return (
     <div>
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="font-medium text-slate-800">{children ?? '—'}</dd>
+      <dt className="text-fg-muted">{label}</dt>
+      <dd className="font-medium text-fg">{children ?? '—'}</dd>
     </div>
   );
 }
@@ -27,7 +27,7 @@ function percent(value) {
 }
 
 const editInputClass =
-  'mt-0.5 w-full rounded-md border border-slate-300 px-2 py-1 text-sm font-normal focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500';
+  'mt-0.5 w-full rounded-lg border border-line px-2 py-1 text-sm font-normal focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand';
 
 function NumberInput({ label, value, onChange, min, max, step = '1' }) {
   return (
@@ -181,15 +181,15 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
         aria-modal="true"
         aria-labelledby="student-detail-title"
         onSubmit={save}
-        className="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-white shadow-xl"
+        className="flex max-h-[90vh] w-full max-w-xl flex-col overflow-hidden rounded-xl bg-surface shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-start justify-between border-b border-slate-200 px-6 py-4">
+        <div className="flex items-start justify-between border-b border-line px-6 py-4">
           <div>
             <h2 id="student-detail-title" className="text-lg font-semibold">
               {student.full_name}
             </h2>
-            <p className="text-sm text-slate-500">Student #{student.student_id}</p>
+            <p className="text-sm text-fg-muted">Student #{student.student_id}</p>
           </div>
           <div className="flex items-center gap-2">
             {canEdit && !editing && (
@@ -198,7 +198,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
                 onClick={startEdit}
                 disabled={!hasRecord}
                 title={hasRecord ? undefined : 'This student has no academic record to edit'}
-                className="rounded-md border border-indigo-200 px-3 py-1 text-sm font-medium text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg border border-line bg-transparent px-3 py-1 text-sm font-medium text-fg-2 hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Edit
               </button>
@@ -209,14 +209,14 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
                   type="button"
                   onClick={cancelEdit}
                   disabled={saving}
-                  className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+                  className="rounded-lg border border-line px-3 py-1 text-sm font-medium text-fg-2 hover:bg-surface-2 disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-md bg-indigo-600 px-3 py-1 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-3 py-1 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
                 >
                   {saving ? 'Saving…' : 'Save'}
                 </button>
@@ -228,7 +228,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
               onClick={onClose}
               disabled={saving}
               aria-label="Close"
-              className="rounded-md px-2 py-1 text-xl leading-none text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 disabled:opacity-50"
+              className="rounded-lg px-2 py-1 text-xl leading-none text-fg-muted hover:bg-surface-2 hover:text-fg-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
             >
               ×
             </button>
@@ -237,7 +237,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
 
         <div className="flex-1 space-y-6 overflow-y-auto px-6 py-5">
           {message.text && (
-            <p role="status" className={`rounded-md px-3 py-2 text-sm ${messageStyles[message.type]}`}>
+            <p role="status" className={`rounded-lg px-3 py-2 text-sm ${messageStyles[message.type]}`}>
               {message.text}
             </p>
           )}
@@ -304,7 +304,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
 
           <Section title="Academic record">
             {!hasRecord ? (
-              <p className="col-span-2 text-slate-500">No academic record yet.</p>
+              <p className="col-span-2 text-fg-muted">No academic record yet.</p>
             ) : (
               <>
                 {RATE_FIELDS.map(([field, label]) => (
@@ -330,13 +330,13 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
           </Section>
 
           <section>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-fg-muted">
               Latest prediction
             </h3>
             {prediction ? (
               <div className="space-y-3 text-sm">
                 <div>
-                  <p className="mb-1 text-slate-500">Risk score</p>
+                  <p className="mb-1 text-fg-muted">Risk score</p>
                   <RiskBar
                     score={prediction.risk_score}
                     percentage={prediction.risk_percentage}
@@ -345,20 +345,20 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
                 </div>
                 <div className="flex flex-wrap gap-x-8 gap-y-2">
                   <div>
-                    <p className="text-slate-500">Risk level</p>
+                    <p className="text-fg-muted">Risk level</p>
                     <span
-                      className={`mt-0.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${tierStyles[tier]}`}
+                      className={`mt-0.5 inline-block rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${tierStyles[tier]}`}
                     >
                       {tier}
                     </span>
                   </div>
                   <div>
-                    <p className="text-slate-500">Model label</p>
-                    <p className="font-medium text-slate-800">{prediction.risk_label}</p>
+                    <p className="text-fg-muted">Model label</p>
+                    <p className="font-medium text-fg">{prediction.risk_label}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Generated</p>
-                    <p className="font-medium text-slate-800">
+                    <p className="text-fg-muted">Generated</p>
+                    <p className="font-medium text-fg">
                       {prediction.generated_at
                         ? new Date(prediction.generated_at).toLocaleString()
                         : '—'}
@@ -367,19 +367,19 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
                 </div>
               </div>
             ) : (
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-fg-muted">
                 Not assessed yet. Run a prediction from the student list.
               </p>
             )}
           </section>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
+        <div className="flex justify-end gap-3 border-t border-line px-6 py-4">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-fg-2 hover:bg-surface-2 disabled:opacity-50"
           >
             Close
           </button>
@@ -387,7 +387,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
             type="button"
             onClick={logIntervention}
             disabled={editing || saving}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+            className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-50"
           >
             Log Intervention
           </button>

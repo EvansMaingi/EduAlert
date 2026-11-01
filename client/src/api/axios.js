@@ -1,10 +1,11 @@
 import axios from 'axios';
+import API_BASE from '../api.js';
 
 export const TOKEN_KEY = 'edualert_token';
 export const USER_KEY = 'edualert_user';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
 });
 

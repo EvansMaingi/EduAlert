@@ -39,14 +39,14 @@ export default function Notifications() {
     <div>
       <h1 className="mb-6 text-2xl font-semibold">Notification Log</h1>
 
-      {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
-      {!error && !notifications && <p className="text-sm text-slate-500">Loading…</p>}
+      {!error && !notifications && <p className="text-sm text-fg-muted">Loading…</p>}
 
       {notifications && (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-line bg-surface-2 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
               <tr>
                 <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3">Student Name</th>
@@ -54,24 +54,24 @@ export default function Notifications() {
                 <th className="px-4 py-3">Email Sent</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-line-subtle">
               {notifications.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={4} className="px-4 py-6 text-center text-fg-muted">
                     No notifications sent yet.
                   </td>
                 </tr>
               )}
               {notifications.map((n) => (
-                <tr key={n.notification_id} className="align-top hover:bg-slate-50">
-                  <td className="whitespace-nowrap px-4 py-3 text-slate-500">
+                <tr key={n.notification_id} className="align-top hover:bg-surface-2">
+                  <td className="whitespace-nowrap px-4 py-3 text-fg-muted">
                     {n.sent_at ? new Date(n.sent_at).toLocaleString() : '—'}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 font-medium">{n.full_name || '—'}</td>
                   <td className="px-4 py-3">
                     {n.message}
                     {n.email_recipient && (
-                      <span className="mt-0.5 block text-xs text-slate-500">To: {n.email_recipient}</span>
+                      <span className="mt-0.5 block text-xs text-fg-muted">To: {n.email_recipient}</span>
                     )}
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">

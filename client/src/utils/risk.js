@@ -12,26 +12,26 @@ export function riskTier(score) {
 
 export const TIERS = ['High', 'Medium', 'Low'];
 
-// Badge styles (tinted background, dark text).
+// Badge styles (tinted background, risk-colour text and a faint border).
 export const tierStyles = {
-  High: 'bg-red-100 text-red-700',
-  Medium: 'bg-amber-100 text-amber-700',
-  Low: 'bg-emerald-100 text-emerald-700',
+  High: 'border border-risk-high/20 bg-[#fef2f2] text-risk-high',
+  Medium: 'border border-risk-medium/20 bg-[#fffbeb] text-risk-medium',
+  Low: 'border border-risk-low/20 bg-[#f0fdf4] text-risk-low',
 };
 
 // Solid fills for bars. tierColors (for Recharts) and tierFillClasses (for
-// Tailwind) are the same colours: red-600, amber-500, emerald-600. Amber is
+// Tailwind) are the same colours: --red-500, --amber-500, --green-500. Amber is
 // under 3:1 contrast on white, so always show the value as text beside it.
 export const tierColors = {
-  High: '#dc2626',
+  High: '#ef4444',
   Medium: '#f59e0b',
-  Low: '#059669',
+  Low: '#16a34a',
 };
 
 export const tierFillClasses = {
-  High: 'bg-red-600',
-  Medium: 'bg-amber-500',
-  Low: 'bg-emerald-600',
+  High: 'bg-risk-high',
+  Medium: 'bg-risk-medium',
+  Low: 'bg-risk-low',
 };
 
 // Students lecturers need to act on: High or Medium tier.

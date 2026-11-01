@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import RiskBar from '../components/RiskBar';
 import StudentDetailModal from '../components/StudentDetailModal';
+import StudentName from '../components/StudentName';
 import { useAuth } from '../context/AuthContext';
 import { isAtRisk, latestPredictionByStudent, riskTier, tierStyles } from '../utils/risk';
+import { atRiskStudents, exportAtRiskCsv, exportAtRiskPdf } from '../utils/exportAtRisk';
 
 // Builds the POST /api/predictions/predict body from a student row, which
 // carries the features of the student's latest academic record.
@@ -38,6 +40,7 @@ export default function Students() {
   const [rows, setRows] = useState(null);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [exportingPdf, setExportingPdf] = useState(false);
   const [deletingIds, setDeletingIds] = useState(new Set());
   const [runningIds, setRunningIds] = useState(new Set());
   const [runningAll, setRunningAll] = useState(false);
@@ -68,6 +71,34 @@ export default function Students() {
       running ? next.add(id) : next.delete(id);
       return next;
     });
+  }
+
+  // Exports of the at-risk (High/Medium) students already loaded in rows.
+  function exportableStudents() {
+    const students = atRiskStudents(rows);
+    if (students.length === 0) setNotice('No at-risk students to export');
+    return students;
+  }
+
+  function exportCsv() {
+    setNotice('');
+    const students = exportableStudents();
+    if (students.length > 0) exportAtRiskCsv(students);
+  }
+
+  async function exportPdf() {
+    setNotice('');
+    const students = exportableStudents();
+    if (students.length === 0) return;
+    setExportingPdf(true);
+    try {
+      await exportAtRiskPdf(students);
+    } catch (err) {
+      console.error(err);
+      setNotice('Failed to create the PDF');
+    } finally {
+      setExportingPdf(false);
+    }
   }
 
   // Puts the row returned by an edit in the modal into the list, so the risk
@@ -168,7 +199,7 @@ export default function Students() {
         <div>
           <h1 className="text-2xl font-semibold">{isAdmin ? 'Students' : 'At-Risk Students'}</h1>
           {!isAdmin && (
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-fg-muted">
               High and Medium risk students, highest risk first
             </p>
           )}
@@ -177,15 +208,29 @@ export default function Students() {
           <div className="flex flex-wrap gap-3">
             <Link
               to="/add-student"
-              className="rounded-md border border-indigo-200 bg-white px-4 py-2 text-sm font-medium text-indigo-700 hover:bg-indigo-50"
+              className="rounded-lg border border-line bg-transparent px-4 py-2 text-sm font-medium text-fg-2 hover:bg-surface-2"
             >
               Add Student
             </Link>
+            <button
+              onClick={exportCsv}
+              disabled={!rows}
+              className="rounded-lg border border-line bg-transparent px-4 py-2 text-sm font-medium text-fg-2 hover:bg-surface-2 disabled:opacity-60"
+            >
+              Export CSV
+            </button>
+            <button
+              onClick={exportPdf}
+              disabled={!rows || exportingPdf}
+              className="rounded-lg border border-line bg-transparent px-4 py-2 text-sm font-medium text-fg-2 hover:bg-surface-2 disabled:opacity-60"
+            >
+              {exportingPdf ? 'Exporting…' : 'Export PDF'}
+            </button>
             {rows && rows.length > 0 && (
               <button
                 onClick={runAllPredictions}
                 disabled={busy}
-                className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+                className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
               >
                 {runningAll ? 'Running predictions…' : 'Run All Predictions'}
               </button>
@@ -194,21 +239,20 @@ export default function Students() {
         )}
       </div>
 
-      {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
       {notice && (
-        <p className="mb-4 rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-700">{notice}</p>
+        <p className="mb-4 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-fg-2">{notice}</p>
       )}
 
-      {!error && !rows && <p className="text-sm text-slate-500">Loading…</p>}
+      {!error && !rows && <p className="text-sm text-fg-muted">Loading…</p>}
 
       {rows && (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
           <table className="min-w-full text-sm">
-            <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+            <thead className="border-b border-line bg-surface-2 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
               <tr>
-                <th className="px-4 py-3">ID</th>
-                <th className="px-4 py-3">Name</th>
+                <th className="px-4 py-3">Student</th>
                 <th className="px-4 py-3">Programme</th>
                 <th className="px-4 py-3">Year</th>
                 <th className="px-4 py-3">Units</th>
@@ -218,10 +262,10 @@ export default function Students() {
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-line-subtle">
               {visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-4 py-6 text-center text-slate-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-fg-muted">
                     {isAdmin ? 'No students found.' : 'No at-risk students right now.'}
                   </td>
                 </tr>
@@ -242,10 +286,11 @@ export default function Students() {
                         setSelectedId(s.student_id);
                       }
                     }}
-                    className="cursor-pointer hover:bg-slate-50 focus:bg-indigo-50 focus:outline-none"
+                    className="cursor-pointer hover:bg-surface-2 focus:bg-line-subtle focus:outline-none"
                   >
-                    <td className="px-4 py-3 text-slate-500">{s.student_id}</td>
-                    <td className="px-4 py-3 font-medium">{s.full_name}</td>
+                    <td className="px-4 py-3">
+                      <StudentName name={s.full_name} index={s.student_id} detail={`ID ${s.student_id}`} />
+                    </td>
                     <td className="px-4 py-3">{s.programme}</td>
                     <td className="px-4 py-3">{s.year_of_study}</td>
                     <td className="px-4 py-3">{s.units_registered}</td>
@@ -261,11 +306,11 @@ export default function Students() {
                     </td>
                     <td className="px-4 py-3">
                       {tier ? (
-                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tierStyles[tier]}`}>
+                        <span className={`rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${tierStyles[tier]}`}>
                           {tier}
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-400">Not assessed</span>
+                        <span className="text-xs text-fg-muted">Not assessed</span>
                       )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-right">
@@ -277,7 +322,7 @@ export default function Students() {
                           }}
                           disabled={!hasRecord || running || runningAll}
                           title={hasRecord ? undefined : 'No academic record for this student'}
-                          className="rounded-md border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-md border border-brand/20 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand hover:bg-line disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {running ? 'Running…' : 'Run Prediction'}
                         </button>
@@ -289,7 +334,7 @@ export default function Students() {
                             deleteStudent(s);
                           }}
                           disabled={running || runningAll || deletingIds.has(s.student_id)}
-                          className="ml-2 rounded-md border border-red-200 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="ml-2 rounded-md border border-risk-high/20 bg-red-50 px-3 py-1 text-[11px] font-medium text-risk-high hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {deletingIds.has(s.student_id) ? 'Deleting…' : 'Delete'}
                         </button>
@@ -300,7 +345,7 @@ export default function Students() {
                             e.stopPropagation();
                             navigate('/interventions', { state: { studentId: s.student_id } });
                           }}
-                          className="rounded-md border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50"
+                          className="rounded-md border border-brand/20 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand hover:bg-line"
                         >
                           Log Intervention
                         </button>

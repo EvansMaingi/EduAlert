@@ -23,7 +23,8 @@ const NEXT_STEPS = [
   'Contact your lecturer for additional support',
 ];
 
-const STUDENT_PORTAL_URL = 'http://localhost:5173/student-login';
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const STUDENT_PORTAL_URL = `${CLIENT_URL}/student-login`;
 
 const LEVEL_COLORS = { High: '#dc2626', Medium: '#b45309', Low: '#047857' };
 

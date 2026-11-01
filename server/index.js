@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+// Tokens signed with a missing secret are worthless, so refuse to start.
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET is not set. Add it to server/.env or the host environment.');
+}
 const express = require('express');
 const cors = require('cors');
 

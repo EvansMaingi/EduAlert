@@ -13,6 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import RiskBar from '../components/RiskBar';
+import StudentName from '../components/StudentName';
 import { useAuth } from '../context/AuthContext';
 import {
   isAtRisk,
@@ -23,11 +24,45 @@ import {
   tierStyles,
 } from '../utils/risk';
 
-function SummaryCard({ label, value, accent }) {
+// Stat card tones: top stripe colour and icon badge tint.
+const CARD_TONES = {
+  blue: { stripe: 'border-t-brand', badge: 'bg-[rgba(37,99,235,.1)] text-brand' },
+  red: { stripe: 'border-t-risk-high', badge: 'bg-[rgba(239,68,68,.1)] text-risk-high' },
+  amber: { stripe: 'border-t-risk-medium', badge: 'bg-[rgba(245,158,11,.1)] text-risk-medium' },
+  green: { stripe: 'border-t-risk-low', badge: 'bg-[rgba(22,163,74,.1)] text-risk-low' },
+};
+
+// 16px stroke icons for the stat cards.
+const CARD_ICONS = {
+  users: 'M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8m13 10v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75',
+  alert: 'M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0M12 9v4m0 4h.01',
+  warning: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20m0-14v4m0 4h.01',
+  clipboard: 'M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2m1-2h6a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1m0 12 2 2 4-4',
+};
+
+function SummaryCard({ label, value, tone, icon }) {
+  const { stripe, badge } = CARD_TONES[tone];
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <p className="text-sm font-medium text-slate-500">{label}</p>
-      <p className={`mt-2 text-3xl font-semibold ${accent}`}>{value}</p>
+    <div className={`rounded-xl border border-t-[3px] border-line ${stripe} bg-surface p-5 shadow-sm`}>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-sm font-medium text-fg-muted">{label}</p>
+        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${badge}`}>
+          <svg
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d={CARD_ICONS[icon]} />
+          </svg>
+        </span>
+      </div>
+      <p className="metric-value mt-2 text-[28px] font-extrabold tracking-[-1px] text-fg">{value}</p>
     </div>
   );
 }
@@ -36,12 +71,12 @@ function DistributionTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
   const { label, count, tier } = payload[0].payload;
   return (
-    <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-md">
+    <div className="rounded-lg border border-line bg-surface px-3 py-2 text-sm shadow-md">
       <div className="flex items-center gap-2">
         <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: tierColors[tier] }} />
-        <span className="font-medium text-slate-800">{label}</span>
+        <span className="font-medium text-fg">{label}</span>
       </div>
-      <p className="mt-0.5 text-slate-600">
+      <p className="mt-0.5 text-fg-2">
         {count} {count === 1 ? 'student' : 'students'}
       </p>
     </div>
@@ -50,29 +85,29 @@ function DistributionTooltip({ active, payload }) {
 
 function RiskDistributionChart({ distribution, notAssessed }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-line bg-surface p-5 shadow-sm">
       <h2 className="text-lg font-semibold">Risk distribution</h2>
-      <p className="mb-4 text-sm text-slate-500">
+      <p className="mb-4 text-sm text-fg-muted">
         Students by their latest prediction
         {notAssessed > 0 && ` · ${notAssessed} not yet assessed`}
       </p>
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={distribution} margin={{ top: 24, right: 8, bottom: 0, left: -16 }}>
-            <CartesianGrid vertical={false} stroke="#e2e8f0" />
+            <CartesianGrid vertical={false} stroke="#dbeafe" />
             <XAxis
               dataKey="label"
               tickLine={false}
-              axisLine={{ stroke: '#cbd5e1' }}
-              tick={{ fill: '#475569', fontSize: 13 }}
+              axisLine={{ stroke: '#dbeafe' }}
+              tick={{ fill: '#334155', fontSize: 13 }}
             />
             <YAxis
               allowDecimals={false}
               tickLine={false}
               axisLine={false}
-              tick={{ fill: '#64748b', fontSize: 12 }}
+              tick={{ fill: '#5b7fa6', fontSize: 12 }}
             />
-            <Tooltip content={<DistributionTooltip />} cursor={{ fill: '#f1f5f9' }} />
+            <Tooltip content={<DistributionTooltip />} cursor={{ fill: '#f5f8ff' }} />
             <Bar dataKey="count" maxBarSize={72} radius={[4, 4, 0, 0]} isAnimationActive={false}>
               {distribution.map((d) => (
                 <Cell key={d.tier} fill={tierColors[d.tier]} />
@@ -97,12 +132,12 @@ const GROUPED_SERIES = TIERS.map((tier) => ({
 function GroupedTooltip({ active, payload }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm shadow-md">
-      <p className="mb-1 font-medium text-slate-800">{payload[0].payload.fullLabel}</p>
+    <div className="rounded-lg border border-line bg-surface px-3 py-2 text-sm shadow-md">
+      <p className="mb-1 font-medium text-fg">{payload[0].payload.fullLabel}</p>
       {GROUPED_SERIES.map(({ tier, dataKey, name }) => {
         const count = payload[0].payload[dataKey];
         return (
-          <div key={tier} className="flex items-center gap-2 text-slate-600">
+          <div key={tier} className="flex items-center gap-2 text-fg-2">
             <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: tierColors[tier] }} />
             <span>
               {name}: {count} {count === 1 ? 'student' : 'students'}
@@ -116,7 +151,7 @@ function GroupedTooltip({ active, payload }) {
 
 function ChartLegend() {
   return (
-    <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-600">
+    <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-fg-2">
       {GROUPED_SERIES.map(({ tier, name }) => (
         <span key={tier} className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: tierColors[tier] }} />
@@ -138,9 +173,9 @@ function GroupedRiskChart({ title, subtitle, data, categoryKey, formatCategory =
   const hasData = data.some((d) => d.high + d.medium + d.low > 0);
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-line bg-surface p-5 shadow-sm">
       <h2 className="text-lg font-semibold">{title}</h2>
-      <p className="mb-4 text-sm text-slate-500">{subtitle}</p>
+      <p className="mb-4 text-sm text-fg-muted">{subtitle}</p>
       {hasData ? (
         <>
           <ChartLegend />
@@ -152,21 +187,21 @@ function GroupedRiskChart({ title, subtitle, data, categoryKey, formatCategory =
                 barGap={2}
                 barCategoryGap="20%"
               >
-                <CartesianGrid vertical={false} stroke="#e2e8f0" />
+                <CartesianGrid vertical={false} stroke="#dbeafe" />
                 <XAxis
                   dataKey="category"
                   tickLine={false}
-                  axisLine={{ stroke: '#cbd5e1' }}
-                  tick={{ fill: '#475569', fontSize: 13 }}
+                  axisLine={{ stroke: '#dbeafe' }}
+                  tick={{ fill: '#334155', fontSize: 13 }}
                   interval={0}
                 />
                 <YAxis
                   allowDecimals={false}
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: '#64748b', fontSize: 12 }}
+                  tick={{ fill: '#5b7fa6', fontSize: 12 }}
                 />
-                <Tooltip content={<GroupedTooltip />} cursor={{ fill: '#f1f5f9' }} />
+                <Tooltip content={<GroupedTooltip />} cursor={{ fill: '#f5f8ff' }} />
                 {GROUPED_SERIES.map(({ tier, dataKey, name }) => (
                   <Bar
                     key={tier}
@@ -192,7 +227,7 @@ function GroupedRiskChart({ title, subtitle, data, categoryKey, formatCategory =
           </div>
         </>
       ) : (
-        <p className="py-8 text-center text-sm text-slate-500">No assessed students yet.</p>
+        <p className="py-8 text-center text-sm text-fg-muted">No assessed students yet.</p>
       )}
     </div>
   );
@@ -202,27 +237,27 @@ function TopAtRiskList({ students }) {
   const navigate = useNavigate();
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-line bg-surface p-5 shadow-sm">
       <h2 className="text-lg font-semibold">Top 5 At-Risk Students</h2>
-      <p className="mb-4 text-sm text-slate-500">Highest risk scores requiring immediate attention</p>
+      <p className="mb-4 text-sm text-fg-muted">Highest risk scores requiring immediate attention</p>
       {students.length === 0 ? (
-        <p className="py-8 text-center text-sm text-slate-500">No at-risk students right now.</p>
+        <p className="py-8 text-center text-sm text-fg-muted">No at-risk students right now.</p>
       ) : (
-        <ol className="divide-y divide-slate-100">
+        <ol className="divide-y divide-line-subtle">
           {students.map((s, i) => (
             <li key={s.student_id}>
               <button
                 type="button"
                 onClick={() => navigate('/students')}
-                className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 rounded-md px-2 py-3 text-left hover:bg-slate-50 focus:bg-indigo-50 focus:outline-none"
+                className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 rounded-lg px-2 py-3 text-left hover:bg-surface-2 focus:bg-line-subtle focus:outline-none"
               >
-                <span className="w-5 text-sm font-semibold tabular-nums text-slate-400">{i + 1}</span>
+                <span className="w-5 text-sm font-semibold tabular-nums text-fg-muted">{i + 1}</span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium text-slate-800">{s.full_name}</span>
-                  <span className="block truncate text-xs text-slate-500">
-                    {s.programme || '—'}
-                    {s.year_of_study ? ` · Year ${s.year_of_study}` : ''}
-                  </span>
+                  <StudentName
+                    name={s.full_name}
+                    index={s.student_id}
+                    detail={`${s.programme || '—'}${s.year_of_study ? ` · Year ${s.year_of_study}` : ''}`}
+                  />
                 </span>
                 <RiskBar score={s.risk_score} percentage={s.risk_percentage} />
                 <span
@@ -241,10 +276,10 @@ function TopAtRiskList({ students }) {
 
 function AnalyticsSections({ analytics, error }) {
   if (error) {
-    return <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
+    return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
   }
   if (!analytics) {
-    return <p className="text-sm text-slate-500">Loading analytics…</p>;
+    return <p className="text-sm text-fg-muted">Loading analytics…</p>;
   }
   return (
     <>
@@ -322,17 +357,17 @@ export default function Dashboard() {
     <div>
       <h1 className="mb-6 text-2xl font-semibold">Dashboard</h1>
 
-      {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
-      {!error && !stats && <p className="text-sm text-slate-500">Loading…</p>}
+      {!error && !stats && <p className="text-sm text-fg-muted">Loading…</p>}
 
       {stats && isAdmin && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryCard label="Total Students" value={stats.totalStudents} accent="text-slate-800" />
-            <SummaryCard label="High Risk" value={stats.counts.High} accent="text-red-600" />
-            <SummaryCard label="Medium Risk" value={stats.counts.Medium} accent="text-amber-600" />
-            <SummaryCard label="Interventions" value={stats.interventions} accent="text-indigo-600" />
+            <SummaryCard label="Total Students" value={stats.totalStudents} tone="blue" icon="users" />
+            <SummaryCard label="High Risk" value={stats.counts.High} tone="red" icon="alert" />
+            <SummaryCard label="Medium Risk" value={stats.counts.Medium} tone="amber" icon="warning" />
+            <SummaryCard label="Interventions" value={stats.interventions} tone="green" icon="clipboard" />
           </div>
 
           <RiskDistributionChart distribution={distribution} notAssessed={stats.notAssessed} />
@@ -356,18 +391,18 @@ function LecturerDashboard({ atRiskStudents, myInterventions }) {
 
   return (
     <div className="space-y-6">
-      <p className="rounded-md bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+      <p className="rounded-lg bg-line-subtle px-4 py-3 text-sm text-sidebar-active">
         Showing all at-risk students requiring intervention
       </p>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard label="At-Risk Students" value={atRiskStudents.length} accent="text-slate-800" />
-        <SummaryCard label="Interventions You've Logged" value={myInterventions} accent="text-indigo-600" />
+        <SummaryCard label="At-Risk Students" value={atRiskStudents.length} tone="red" icon="alert" />
+        <SummaryCard label="Interventions You've Logged" value={myInterventions} tone="green" icon="clipboard" />
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
         <table className="min-w-full text-sm">
-          <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-line bg-surface-2 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Programme</th>
@@ -377,10 +412,10 @@ function LecturerDashboard({ atRiskStudents, myInterventions }) {
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-line-subtle">
             {atRiskStudents.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-fg-muted">
                   No at-risk students right now.
                 </td>
               </tr>
@@ -388,22 +423,24 @@ function LecturerDashboard({ atRiskStudents, myInterventions }) {
             {atRiskStudents.map((s) => {
               const tier = riskTier(s.prediction.risk_score);
               return (
-                <tr key={s.student_id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium">{s.full_name}</td>
+                <tr key={s.student_id} className="hover:bg-surface-2">
+                  <td className="px-4 py-3">
+                    <StudentName name={s.full_name} index={s.student_id} detail={`ID ${s.student_id}`} />
+                  </td>
                   <td className="px-4 py-3">{s.programme}</td>
                   <td className="px-4 py-3">{s.year_of_study}</td>
                   <td className="px-4 py-3">
                     <RiskBar score={s.prediction.risk_score} percentage={s.prediction.risk_percentage} />
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${tierStyles[tier]}`}>
+                    <span className={`rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${tierStyles[tier]}`}>
                       {tier}
                     </span>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <button
                       onClick={() => navigate('/interventions', { state: { studentId: s.student_id } })}
-                      className="rounded-md border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-700 hover:bg-indigo-50"
+                      className="rounded-md border border-brand/20 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand hover:bg-line"
                     >
                       Log Intervention
                     </button>

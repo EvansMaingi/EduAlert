@@ -16,10 +16,10 @@ import StudentPortal from './pages/StudentPortal';
 // Shell shared by every authenticated page.
 function Layout() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        <Sidebar />
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Navbar />
         <main className="flex-1 overflow-x-auto p-6">
           <Outlet />
         </main>

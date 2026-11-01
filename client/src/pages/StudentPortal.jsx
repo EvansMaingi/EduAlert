@@ -16,12 +16,12 @@ const SUPPORT_TYPES = [
 ];
 
 const requestStatusStyles = {
-  Pending: 'bg-slate-100 text-slate-700',
+  Pending: 'bg-slate-100 text-fg-2',
   Actioned: 'bg-emerald-100 text-emerald-700',
 };
 
 const interventionStatusStyles = {
-  Pending: 'bg-slate-100 text-slate-700',
+  Pending: 'bg-slate-100 text-fg-2',
   Contacted: 'bg-blue-100 text-blue-700',
   'In Progress': 'bg-amber-100 text-amber-800',
   Resolved: 'bg-emerald-100 text-emerald-700',
@@ -37,7 +37,7 @@ function formatDate(value) {
 
 function Card({ title, children, className = '' }) {
   return (
-    <section className={`rounded-xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>
+    <section className={`rounded-xl border border-line bg-surface p-5 shadow-sm ${className}`}>
       <h2 className="mb-3 text-lg font-semibold">{title}</h2>
       {children}
     </section>
@@ -46,7 +46,7 @@ function Card({ title, children, className = '' }) {
 
 function Badge({ styles, value }) {
   return (
-    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${styles[value] || styles.Pending}`}>
+    <span className={`rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${styles[value] || styles.Pending}`}>
       {value}
     </span>
   );
@@ -56,7 +56,7 @@ function RiskCard({ prediction }) {
   if (!prediction) {
     return (
       <Card title="My risk level">
-        <p className="text-sm text-slate-500">You haven't been assessed yet.</p>
+        <p className="text-sm text-fg-muted">You haven't been assessed yet.</p>
       </Card>
     );
   }
@@ -72,7 +72,7 @@ function RiskCard({ prediction }) {
       <div className="mt-4">
         <RiskBar score={prediction.risk_score} percentage={prediction.risk_percentage} width="w-full" />
       </div>
-      <p className="mt-3 text-xs text-slate-500">Assessed on {formatDate(prediction.generated_at)}</p>
+      <p className="mt-3 text-xs text-fg-muted">Assessed on {formatDate(prediction.generated_at)}</p>
     </Card>
   );
 }
@@ -182,45 +182,65 @@ export default function StudentPortal() {
 
   return (
     <div className="min-h-screen">
-      <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-6">
-        <span className="text-lg font-semibold text-indigo-700">
-          EduAlert <span className="font-normal text-slate-500">Student Portal</span>
+      <header className="flex h-14 items-center justify-between border-b border-line bg-surface px-6">
+        <span className="text-lg font-semibold text-brand">
+          EduAlert <span className="font-normal text-fg-muted">Student Portal</span>
         </span>
         <button
           onClick={logout}
-          className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-100"
+          className="rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-fg-2 hover:bg-surface-2"
         >
           Logout
         </button>
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 p-6">
-        {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-        {!error && !profile && <p className="text-sm text-slate-500">Loading…</p>}
+        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {!error && !profile && <p className="text-sm text-fg-muted">Loading…</p>}
 
         {profile && (
           <>
-            <div>
-              <h1 className="text-2xl font-semibold">Welcome, {student.full_name}</h1>
-              <p className="mt-1 text-sm text-slate-500">
+            <div className="relative overflow-hidden rounded-[14px] bg-[linear-gradient(135deg,#1d4ed8_0%,#2563eb_55%,#3b82f6_100%)] p-6 text-white shadow-md">
+              {profile.prediction && (
+                <span
+                  className={`absolute right-5 top-5 rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${tierStyles[profile.prediction.risk_level]}`}
+                >
+                  {profile.prediction.risk_level} risk
+                </span>
+              )}
+              <p className="text-sm text-fg-inv-2">Welcome back</p>
+              <h1 className="mt-1 pr-28 text-2xl font-extrabold">{student.full_name}</h1>
+              <p className="mt-1 text-sm text-fg-inv-2">
                 {student.programme}
                 {student.year_of_study ? ` · Year ${student.year_of_study}` : ''}
                 {student.student_number ? ` · ${student.student_number}` : ''}
               </p>
             </div>
 
+            {['High', 'Medium'].includes(profile.prediction?.risk_level) && (
+              <div
+                role="alert"
+                className="rounded-[10px] border-l-4 border-risk-high bg-[rgba(239,68,68,.05)] px-4 py-3 text-sm text-fg-2"
+              >
+                <span className="font-semibold text-risk-high">
+                  You have been flagged as {profile.prediction.risk_level} risk.
+                </span>{' '}
+                Review the areas that need attention below and request the support you need.
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <RiskCard prediction={profile.prediction} />
 
               <Card title="Areas that need attention">
                 {profile.weak_areas.length > 0 ? (
-                  <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
+                  <ul className="list-disc space-y-1 pl-5 text-sm text-fg-2">
                     {profile.weak_areas.map((area) => (
                       <li key={area}>{area}</li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-fg-muted">
                     {profile.academic_record
                       ? 'None of your indicators are currently flagged. Keep it up!'
                       : 'No academic record is available yet.'}
@@ -231,7 +251,7 @@ export default function StudentPortal() {
 
             {notification && (
               <Card title="Risk notification">
-                <p className="text-sm text-slate-700">
+                <p className="text-sm text-fg-2">
                   A risk notification was sent to you on {formatDate(notification.sent_at)}.
                 </p>
                 {ackError && <p className="mt-3 text-sm text-red-700">{ackError}</p>}
@@ -239,7 +259,7 @@ export default function StudentPortal() {
                   <button
                     onClick={acknowledge}
                     disabled={notification.acknowledged || acknowledging}
-                    className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
+                    className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
                   >
                     {acknowledging ? 'Saving…' : 'I have read and understood my risk notification'}
                   </button>
@@ -256,7 +276,7 @@ export default function StudentPortal() {
               <form onSubmit={submitRequest} className="space-y-4">
                 {requestMessage.text && (
                   <p
-                    className={`rounded-md px-3 py-2 text-sm ${
+                    className={`rounded-lg px-3 py-2 text-sm ${
                       requestMessage.type === 'success'
                         ? 'bg-emerald-50 text-emerald-700'
                         : 'bg-red-50 text-red-700'
@@ -266,17 +286,17 @@ export default function StudentPortal() {
                   </p>
                 )}
                 <fieldset>
-                  <legend className="mb-2 text-sm font-medium text-slate-700">
-                    Type of support <span className="font-normal text-slate-500">(select all that apply)</span>
+                  <legend className="mb-2 text-sm font-medium text-fg-2">
+                    Type of support <span className="font-normal text-fg-muted">(select all that apply)</span>
                   </legend>
                   <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
                     {SUPPORT_TYPES.map((t) => (
-                      <label key={t} className="flex items-center gap-2 text-sm text-slate-700">
+                      <label key={t} className="flex items-center gap-2 text-sm text-fg-2">
                         <input
                           type="checkbox"
                           checked={selectedTypes.includes(t)}
                           onChange={() => toggleType(t)}
-                          className="h-4 w-4 accent-indigo-600"
+                          className="h-4 w-4 accent-brand"
                         />
                         {t}
                       </label>
@@ -284,19 +304,19 @@ export default function StudentPortal() {
                   </div>
                 </fieldset>
                 <label className="block">
-                  <span className="mb-1 block text-sm font-medium text-slate-700">Details (optional)</span>
+                  <span className="mb-1 block text-sm font-medium text-fg-2">Details (optional)</span>
                   <input
                     type="text"
                     value={supportNotes}
                     onChange={(e) => setSupportNotes(e.target.value)}
                     placeholder="e.g. which unit you need help with (added to each request)"
-                    className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
                   />
                 </label>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+                  className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
                 >
                   {submitting ? 'Submitting…' : 'Submit Request'}
                 </button>
@@ -306,7 +326,7 @@ export default function StudentPortal() {
             <Card title="My support requests">
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
-                  <thead className="text-left text-xs uppercase tracking-wide text-slate-500">
+                  <thead className="border-b border-line text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
                     <tr>
                       <th className="py-2 pr-4">Date</th>
                       <th className="py-2 pr-4">Support type</th>
@@ -314,19 +334,19 @@ export default function StudentPortal() {
                       <th className="py-2">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-line-subtle">
                     {requests.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="py-4 text-center text-slate-500">
+                        <td colSpan={4} className="py-4 text-center text-fg-muted">
                           You haven't requested any support yet.
                         </td>
                       </tr>
                     )}
                     {requests.map((r) => (
                       <tr key={r.request_id}>
-                        <td className="whitespace-nowrap py-2 pr-4 text-slate-500">{formatDate(r.requested_at)}</td>
+                        <td className="whitespace-nowrap py-2 pr-4 text-fg-muted">{formatDate(r.requested_at)}</td>
                         <td className="py-2 pr-4 font-medium">{r.support_type}</td>
-                        <td className="py-2 pr-4 text-slate-600">{r.notes || '—'}</td>
+                        <td className="py-2 pr-4 text-fg-2">{r.notes || '—'}</td>
                         <td className="py-2">
                           <Badge styles={requestStatusStyles} value={r.status} />
                         </td>
@@ -340,7 +360,7 @@ export default function StudentPortal() {
             <Card title="My interventions">
               <div className="overflow-x-auto">
                 <table className="min-w-full text-sm">
-                  <thead className="text-left text-xs uppercase tracking-wide text-slate-500">
+                  <thead className="border-b border-line text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
                     <tr>
                       <th className="py-2 pr-4">Date</th>
                       <th className="py-2 pr-4">Action taken by your lecturer</th>
@@ -348,19 +368,19 @@ export default function StudentPortal() {
                       <th className="py-2">Status</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-line-subtle">
                     {interventions.length === 0 && (
                       <tr>
-                        <td colSpan={4} className="py-4 text-center text-slate-500">
+                        <td colSpan={4} className="py-4 text-center text-fg-muted">
                           No interventions have been logged for you.
                         </td>
                       </tr>
                     )}
                     {interventions.map((i) => (
                       <tr key={i.intervention_id}>
-                        <td className="whitespace-nowrap py-2 pr-4 text-slate-500">{formatDate(i.date_logged)}</td>
+                        <td className="whitespace-nowrap py-2 pr-4 text-fg-muted">{formatDate(i.date_logged)}</td>
                         <td className="py-2 pr-4">{i.action_taken}</td>
-                        <td className="py-2 pr-4 text-slate-600">{i.outcome || '—'}</td>
+                        <td className="py-2 pr-4 text-fg-2">{i.outcome || '—'}</td>
                         <td className="py-2">
                           <Badge styles={interventionStatusStyles} value={i.status || 'Pending'} />
                         </td>

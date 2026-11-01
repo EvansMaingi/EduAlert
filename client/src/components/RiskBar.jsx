@@ -14,14 +14,14 @@ export default function RiskBar({ score, percentage, width = 'w-24' }) {
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={clamped}
-        className={`h-2 ${width} overflow-hidden rounded-full bg-slate-200`}
+        className={`h-1.5 ${width} overflow-hidden rounded-[3px] bg-line`}
       >
         <div
-          className={`h-full rounded-full ${tierFillClasses[tier]}`}
+          className={`h-full rounded-[3px] ${tierFillClasses[tier]}`}
           style={{ width: `${clamped}%` }}
         />
       </div>
-      <span className="text-xs font-medium tabular-nums text-slate-700">{percentage}%</span>
+      <span className="text-xs font-medium tabular-nums text-fg-2">{percentage}%</span>
     </div>
   );
 }

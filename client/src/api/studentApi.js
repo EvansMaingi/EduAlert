@@ -1,4 +1,5 @@
 import axios from 'axios';
+import API_BASE from '../api.js';
 
 // Student Portal session, kept separate from the staff session (api/axios.js)
 // so the two never mix.
@@ -20,7 +21,7 @@ export function clearStudentSession() {
 }
 
 const studentApi = axios.create({
-  baseURL: 'http://localhost:5000',
+  baseURL: API_BASE,
   headers: { 'Content-Type': 'application/json' },
 });
 
