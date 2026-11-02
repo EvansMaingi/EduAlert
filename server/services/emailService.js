@@ -1,20 +1,10 @@
 require('dotenv').config({ path: require('path').join(__dirname, '../.env') });
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const { riskLevel, weakAreas } = require('./riskInsights');
 
-// Gmail SMTP. EMAIL_PASS must be a Gmail App Password (requires 2FA on the
-// account), not the normal account password.
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-  // Fail fast so a slow SMTP server doesn't hold up the API response.
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000,
-});
+// The Resend constructor throws without a key, so only create the client when
+// one is set; otherwise the server would crash on startup.
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const NEXT_STEPS = [
   'Visit your academic advisor',
@@ -38,13 +28,7 @@ function escapeHtml(value) {
 }
 
 function isConfigured() {
-  const { EMAIL_USER, EMAIL_PASS } = process.env;
-  return Boolean(
-    EMAIL_USER &&
-      EMAIL_PASS &&
-      EMAIL_USER !== 'your_gmail@gmail.com' &&
-      EMAIL_PASS !== 'your_gmail_app_password'
-  );
+  return Boolean(process.env.RESEND_API_KEY);
 }
 
 function buildHtml(student, prediction, intervention = null) {
@@ -111,7 +95,7 @@ ${
 // there too. Throws if the email can't be sent.
 async function sendRiskNotification(student, prediction, intervention = null) {
   if (!isConfigured()) {
-    throw new Error('Email is not configured (set EMAIL_USER and EMAIL_PASS in server/.env)');
+    throw new Error('Email is not configured (set RESEND_API_KEY in server/.env)');
   }
   if (!student.email) {
     throw new Error('Student has no email address');
@@ -120,13 +104,17 @@ async function sendRiskNotification(student, prediction, intervention = null) {
     throw new Error('Student has no prediction');
   }
 
-  return transporter.sendMail({
-    from: `"EduAlert" <${process.env.EMAIL_USER}>`,
+  // Resend reports failures in the result instead of throwing; throw so callers
+  // don't log a rejected email as sent.
+  const { data, error } = await resend.emails.send({
+    from: 'EduAlert <onboarding@resend.dev>',
     to: student.email,
     cc: process.env.EMAIL_TEST_RECIPIENT || undefined,
     subject: 'EduAlert - Academic Risk Notification',
     html: buildHtml(student, prediction, intervention),
   });
+  if (error) throw new Error(error.message);
+  return data;
 }
 
 module.exports = { sendRiskNotification, buildHtml };
