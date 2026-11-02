@@ -107,7 +107,7 @@ async function sendRiskNotification(student, prediction, intervention = null) {
   // Resend reports failures in the result instead of throwing; throw so callers
   // don't log a rejected email as sent.
   const { data, error } = await resend.emails.send({
-    from: 'EduAlert <onboarding@resend.dev>',
+    from: 'EduAlert <noreply@edualert.store>',
     to: student.email,
     cc: process.env.EMAIL_TEST_RECIPIENT || undefined,
     subject: 'EduAlert - Academic Risk Notification',
