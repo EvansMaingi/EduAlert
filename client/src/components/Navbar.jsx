@@ -7,6 +7,7 @@ const PAGE_TITLES = {
   '/dashboard': 'Dashboard',
   '/students': 'Students',
   '/add-student': 'Add Student',
+  '/users': 'Users',
   '/interventions': 'Interventions',
   '/support-requests': 'Support Requests',
   '/notifications': 'Notifications',

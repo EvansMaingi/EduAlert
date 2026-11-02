@@ -117,4 +117,68 @@ async function sendRiskNotification(student, prediction, intervention = null) {
   return data;
 }
 
-module.exports = { sendRiskNotification, buildHtml };
+const LOGIN_URL = 'https://edu-alert-iota.vercel.app';
+
+function buildWelcomeHtml(user, plainPassword) {
+  const rows = [
+    ['Name', user.name],
+    ['Email', user.email],
+    ['Password', plainPassword],
+    ['Role', user.role === 'admin' ? 'Admin' : 'Lecturer'],
+  ]
+    .map(
+      ([label, value]) => `<tr>
+              <td style="padding:6px 16px 6px 0;color:#64748b;">${label}</td>
+              <td style="padding:6px 0;font-weight:bold;">${escapeHtml(value)}</td>
+            </tr>`
+    )
+    .join('');
+
+  return `<!doctype html>
+<html>
+  <body style="margin:0;padding:24px;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;color:#1e293b;">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;">
+      <div style="background:#1d4ed8;color:#ffffff;padding:16px 24px;font-size:20px;font-weight:bold;">EduAlert</div>
+      <div style="padding:24px;">
+        <p style="margin:0 0 16px;">Dear ${escapeHtml(user.name)},</p>
+        <p style="margin:0 0 16px;">An EduAlert account has been created for you. Your login details are below.</p>
+
+        <div style="border:1px solid #e2e8f0;border-radius:6px;padding:12px 16px;margin-bottom:20px;">
+          <table style="border-collapse:collapse;font-size:14px;">
+            ${rows}
+          </table>
+        </div>
+
+        <p style="margin:0 0 20px;">
+          <a href="${LOGIN_URL}" style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:bold;">Log in to EduAlert</a>
+        </p>
+        <p style="margin:0;font-size:13px;color:#64748b;">
+          Or open <a href="${LOGIN_URL}" style="color:#2563eb;">${LOGIN_URL}</a>.
+          Please keep these details private.
+        </p>
+      </div>
+      <div style="padding:16px 24px;background:#f1f5f9;font-size:12px;color:#64748b;">
+        This is an automated message from EduAlert - Student Academic Welfare System
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+
+// Emails a new staff user their login details. Throws if the email can't be sent.
+async function sendWelcomeEmail(user, plainPassword) {
+  if (!isConfigured()) {
+    throw new Error('Email is not configured (set RESEND_API_KEY in server/.env)');
+  }
+
+  const { data, error } = await resend.emails.send({
+    from: 'EduAlert <noreply@edualert.store>',
+    to: user.email,
+    subject: 'Welcome to EduAlert',
+    html: buildWelcomeHtml(user, plainPassword),
+  });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+module.exports = { sendRiskNotification, sendWelcomeEmail, buildHtml };

@@ -32,6 +32,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/student-portal', studentPortalRoutes);
 app.use('/api/lecturer', lecturerRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/users', require('./routes/users'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
