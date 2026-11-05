@@ -27,7 +27,7 @@ function percent(value) {
 }
 
 const editInputClass =
-  'mt-0.5 w-full rounded-lg border border-line px-2 py-1 text-sm font-normal focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand';
+  'mt-0.5 w-full rounded-lg border border-line px-2 py-1 text-sm font-normal focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400';
 
 function NumberInput({ label, value, onChange, min, max, step = '1' }) {
   return (
@@ -81,9 +81,9 @@ function formFromStudent(student) {
 }
 
 const messageStyles = {
-  success: 'bg-emerald-50 text-emerald-700',
-  warning: 'bg-amber-50 text-amber-800',
-  error: 'bg-red-50 text-red-700',
+  success: 'bg-risk-low/15 text-emerald-300',
+  warning: 'bg-risk-medium/15 text-amber-300',
+  error: 'bg-risk-high/15 text-red-300',
 };
 
 // canEdit shows the Edit button (admins). onSaved(row) receives the updated
@@ -173,7 +173,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={editing || saving ? undefined : onClose}
     >
       <form
@@ -216,7 +216,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
                 <button
                   type="submit"
                   disabled={saving}
-                  className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-3 py-1 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
+                  className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-3 py-1 text-sm text-white hover:bg-brand-hover disabled:opacity-60"
                 >
                   {saving ? 'Saving…' : 'Save'}
                 </button>
@@ -228,7 +228,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
               onClick={onClose}
               disabled={saving}
               aria-label="Close"
-              className="rounded-lg px-2 py-1 text-xl leading-none text-fg-muted hover:bg-surface-2 hover:text-fg-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
+              className="rounded-lg px-2 py-1 text-xl leading-none text-fg-muted hover:bg-surface-2 hover:text-fg-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-50"
             >
               ×
             </button>
@@ -387,7 +387,7 @@ export default function StudentDetailModal({ student, onClose, canEdit = false, 
             type="button"
             onClick={logIntervention}
             disabled={editing || saving}
-            className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-50"
+            className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-brand-hover disabled:opacity-50"
           >
             Log Intervention
           </button>

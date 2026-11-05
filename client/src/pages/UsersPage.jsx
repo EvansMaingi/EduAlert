@@ -5,11 +5,11 @@ import { useAuth } from '../context/AuthContext';
 import StudentName from '../components/StudentName';
 
 const inputClass =
-  'w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand';
+  'w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400';
 
 const roleStyles = {
-  admin: 'border border-brand/20 bg-line-subtle text-brand',
-  lecturer: 'border border-slate-200 bg-slate-100 text-slate-600',
+  admin: 'border border-brand-400/40 bg-line-subtle text-brand-300',
+  lecturer: 'border border-white/15 bg-white/10 text-fg-2',
 };
 
 const EMPTY_FORM = { name: '', email: '', password: '', role: 'lecturer' };
@@ -64,7 +64,7 @@ function AddUserModal({ onClose, onCreated }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={saving ? undefined : onClose}
     >
       <form
@@ -84,14 +84,14 @@ function AddUserModal({ onClose, onCreated }) {
             onClick={onClose}
             disabled={saving}
             aria-label="Close"
-            className="rounded-lg px-2 py-1 text-xl leading-none text-fg-muted hover:bg-surface-2 hover:text-fg-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
+            className="rounded-lg px-2 py-1 text-xl leading-none text-fg-muted hover:bg-surface-2 hover:text-fg-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400 disabled:opacity-50"
           >
             ×
           </button>
         </div>
 
         <div className="space-y-4 px-6 py-5">
-          {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+          {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
           <Field label="Full Name">
             <input
               ref={firstFieldRef}
@@ -140,7 +140,7 @@ function AddUserModal({ onClose, onCreated }) {
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_3px_rgba(37,99,235,.3)] hover:bg-sidebar-active disabled:opacity-60"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_3px_rgba(37,99,235,.3)] hover:bg-brand-hover disabled:opacity-60"
           >
             {saving ? 'Creating…' : 'Create User'}
           </button>
@@ -214,9 +214,9 @@ export default function UsersPage() {
   }
 
   const noticeStyles = {
-    success: 'bg-emerald-50 text-emerald-800',
-    warning: 'bg-amber-50 text-amber-800',
-    error: 'bg-red-50 text-red-700',
+    success: 'bg-risk-low/15 text-emerald-300',
+    warning: 'bg-risk-medium/15 text-amber-300',
+    error: 'bg-risk-high/15 text-red-300',
   };
 
   return (
@@ -226,7 +226,7 @@ export default function UsersPage() {
         <button
           type="button"
           onClick={() => setShowAdd(true)}
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_3px_rgba(37,99,235,.3)] hover:bg-sidebar-active"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white shadow-[0_1px_3px_rgba(37,99,235,.3)] hover:bg-brand-hover"
         >
           Add User
         </button>
@@ -238,7 +238,7 @@ export default function UsersPage() {
         </p>
       )}
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
 
       {!error && !users && <p className="text-sm text-fg-muted">Loading…</p>}
 
@@ -285,7 +285,7 @@ export default function UsersPage() {
                         onClick={() => deleteUser(u)}
                         disabled={isSelf || deleting}
                         title={isSelf ? 'You cannot delete your own account' : undefined}
-                        className="rounded-md border border-risk-high/20 bg-[#fef2f2] px-3 py-1 text-[11px] font-medium text-risk-high hover:bg-[#fee2e2] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="rounded-md border border-risk-high/30 bg-risk-high/15 px-3 py-1 text-[11px] font-medium text-[#f87171] hover:bg-risk-high/25 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {deleting ? 'Deleting…' : 'Delete'}
                       </button>

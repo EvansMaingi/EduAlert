@@ -48,12 +48,12 @@ export default function StudentLogin() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-xl border border-line bg-surface p-8 shadow-sm"
       >
-        <h1 className="text-2xl font-semibold text-brand">EduAlert</h1>
+        <h1 className="text-2xl font-semibold text-brand-300">EduAlert</h1>
         <p className="mt-1 text-sm font-medium text-fg-2">Student Portal</p>
         <p className="mb-6 mt-1 text-sm text-fg-muted">Sign in with your university email</p>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</div>
+          <div className="mb-4 rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</div>
         )}
 
         <label className="mb-4 block">
@@ -64,7 +64,7 @@ export default function StudentLogin() {
             autoComplete="username"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
           />
         </label>
 
@@ -76,14 +76,14 @@ export default function StudentLogin() {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
           />
         </label>
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
+          className="w-full rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] py-2 text-sm text-white hover:bg-brand-hover disabled:opacity-60"
         >
           {submitting ? 'Signing in…' : 'Sign in'}
         </button>
@@ -101,7 +101,7 @@ export default function StudentLogin() {
 
         <p className="mt-6 text-center text-sm text-fg-muted">
           Staff member?{' '}
-          <Link to="/" className="font-medium text-brand hover:underline">
+          <Link to="/" className="font-medium text-brand-300 hover:underline">
             Staff login
           </Link>
         </p>

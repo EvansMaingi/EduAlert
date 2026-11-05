@@ -12,16 +12,24 @@ export function riskTier(score) {
 
 export const TIERS = ['High', 'Medium', 'Low'];
 
-// Badge styles (tinted background, risk-colour text and a faint border).
+// Badge styles (tinted background and a faint border). The text is a lighter
+// step of each colour, because the pure risk colours are under 4.5:1 at this size.
 export const tierStyles = {
-  High: 'border border-risk-high/20 bg-[#fef2f2] text-risk-high',
-  Medium: 'border border-risk-medium/20 bg-[#fffbeb] text-risk-medium',
-  Low: 'border border-risk-low/20 bg-[#f0fdf4] text-risk-low',
+  High: 'border border-risk-high/30 bg-risk-high/15 text-[#f87171]',
+  Medium: 'border border-risk-medium/30 bg-risk-medium/15 text-[#fbbf24]',
+  Low: 'border border-risk-low/30 bg-risk-low/15 text-[#4ade80]',
+};
+
+// The same text colours, for a risk value shown without a badge.
+export const tierTextClasses = {
+  High: 'text-[#f87171]',
+  Medium: 'text-[#fbbf24]',
+  Low: 'text-[#4ade80]',
 };
 
 // Solid fills for bars. tierColors (for Recharts) and tierFillClasses (for
-// Tailwind) are the same colours: --red-500, --amber-500, --green-500. Amber is
-// under 3:1 contrast on white, so always show the value as text beside it.
+// Tailwind) are the same colours. Green is deeper than --green-500, which is too
+// close to amber for colour-blind readers when the two are drawn as bars.
 export const tierColors = {
   High: '#ef4444',
   Medium: '#f59e0b',
@@ -31,8 +39,16 @@ export const tierColors = {
 export const tierFillClasses = {
   High: 'bg-risk-high',
   Medium: 'bg-risk-medium',
-  Low: 'bg-risk-low',
+  Low: 'bg-[#16a34a]',
 };
+
+// Fill for a 0-100 academic rate where higher is better: red below 50, amber
+// from 50 to 70, green above 70.
+export function rateFillClass(value) {
+  if (value < 50) return 'bg-risk-high';
+  if (value <= 70) return 'bg-risk-medium';
+  return tierFillClasses.Low;
+}
 
 // Students lecturers need to act on: High or Medium tier.
 export function isAtRisk(score) {

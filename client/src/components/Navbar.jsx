@@ -27,16 +27,22 @@ export default function Navbar() {
   }
 
   return (
-    <header className="flex h-14 items-center justify-between border-b border-line bg-surface px-6">
+    <header className="flex h-14 items-center justify-between border-b border-line bg-sidebar px-6">
       <span className="page-title text-lg font-bold text-fg">{title}</span>
       <div className="flex items-center gap-3">
         {user && (
-          <span
-            title={name}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white"
-          >
-            {initials(name)}
-          </span>
+          <div className="flex items-center gap-2.5">
+            <span className="text-right">
+              <span className="block text-sm font-medium leading-tight text-fg">{name}</span>
+              <span className="block text-xs capitalize leading-tight text-fg-muted">{user.role}</span>
+            </span>
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-xs font-semibold text-white"
+            >
+              {initials(name)}
+            </span>
+          </div>
         )}
         <button
           onClick={handleLogout}

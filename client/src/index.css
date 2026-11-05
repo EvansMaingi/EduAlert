@@ -2,27 +2,30 @@
 
 /* Design tokens */
 :root {
-  --bg: #eef2f9;
-  --surface: #ffffff;
-  --surface-2: #f5f8ff;
-  --sidebar: #1d4ed8;
-  --sidebar-active: #1e40af;
-  --border: #dbeafe;
-  --border-subtle: #eff6ff;
-  --fg: #1e3a5f;
-  --fg-2: #334155;
-  --fg-muted: #5b7fa6;
+  /* Native controls (select menus, date pickers, scrollbars) render dark too. */
+  color-scheme: dark;
+  --bg: #1a1d27;
+  --surface: #242736;
+  --surface-2: #2d3148;
+  --sidebar: #0f1117;
+  --sidebar-active: #1e2235;
+  --border: #383c50;
+  --border-subtle: #2e3244;
+  --fg: #ffffff;
+  --fg-2: #cbd5e1;
+  --fg-muted: #94a3b8;
   --fg-inv: #f8fafc;
   --fg-inv-2: #bfdbfe;
+  --blue-600: #1d4ed8;
   --blue-500: #2563eb;
   --blue-400: #3b82f6;
   --blue-300: #93c5fd;
   --red-500: #ef4444;
   --amber-500: #f59e0b;
-  --green-500: #16a34a;
-  --shadow-sm: 0 1px 4px rgba(37,99,235,.08);
-  --shadow-md: 0 4px 16px rgba(37,99,235,.10);
-  --shadow-lg: 0 8px 32px rgba(37,99,235,.12);
+  --green-500: #22c55e;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.25);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.35);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.45);
 }
 
 /* The tokens as Tailwind utilities: bg-surface, text-fg-muted, border-line, … */
@@ -40,6 +43,7 @@
   --color-fg-inv: var(--fg-inv);
   --color-fg-inv-2: var(--fg-inv-2);
   --color-brand: var(--blue-500);
+  --color-brand-hover: var(--blue-600);
   --color-brand-400: var(--blue-400);
   --color-brand-300: var(--blue-300);
   --color-risk-high: var(--red-500);

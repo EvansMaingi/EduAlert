@@ -14,14 +14,14 @@ const emptyForm = {
 const STATUSES = ['Pending', 'Contacted', 'In Progress', 'Resolved'];
 
 const statusStyles = {
-  Pending: 'bg-slate-100 text-fg-2',
-  Contacted: 'bg-blue-100 text-blue-700',
-  'In Progress': 'bg-amber-100 text-amber-800',
-  Resolved: 'bg-emerald-100 text-emerald-700',
+  Pending: 'bg-white/10 text-fg-2',
+  Contacted: 'bg-brand-400/15 text-brand-300',
+  'In Progress': 'bg-risk-medium/15 text-amber-300',
+  Resolved: 'bg-risk-low/15 text-emerald-300',
 };
 
 const inputClass =
-  'w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand';
+  'w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400';
 
 function errorMessage(err, fallback) {
   return err.response?.data?.error || fallback;
@@ -173,10 +173,10 @@ export default function Interventions() {
         <h2 className="mb-4 text-lg font-semibold">Log an intervention</h2>
 
         {formError && (
-          <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{formError}</p>
+          <p className="mb-4 rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{formError}</p>
         )}
         {formSuccess && (
-          <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <p className="mb-4 rounded-lg bg-risk-low/15 px-3 py-2 text-sm text-emerald-300">
             {formSuccess}
           </p>
         )}
@@ -215,12 +215,12 @@ export default function Interventions() {
               </span>
             )}
             {predictionStatus === 'none' && (
-              <span className="mt-1 block text-xs text-amber-700">
+              <span className="mt-1 block text-xs text-amber-300">
                 No prediction found for this student - run a prediction first
               </span>
             )}
             {predictionStatus === 'error' && (
-              <span className="mt-1 block text-xs text-red-700">
+              <span className="mt-1 block text-xs text-red-300">
                 Couldn't look up predictions. Enter the prediction ID manually.
               </span>
             )}
@@ -263,16 +263,16 @@ export default function Interventions() {
         <button
           type="submit"
           disabled={submitting || predictionStatus === 'loading' || predictionStatus === 'none'}
-          className="mt-5 rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
+          className="mt-5 rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-brand-hover disabled:opacity-60"
         >
           {submitting ? 'Saving…' : 'Log Intervention'}
         </button>
       </form>
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
 
       {statusError && (
-        <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{statusError}</p>
+        <p className="mb-4 rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{statusError}</p>
       )}
 
       {!error && !interventions && <p className="text-sm text-fg-muted">Loading…</p>}
@@ -321,7 +321,7 @@ export default function Interventions() {
                         value={i.status || 'Pending'}
                         disabled={updatingIds.has(i.intervention_id)}
                         onChange={(e) => updateStatus(i.intervention_id, e.target.value)}
-                        className="rounded-lg border border-line px-2 py-1 text-xs focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand disabled:opacity-60"
+                        className="rounded-lg border border-line px-2 py-1 text-xs focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400 disabled:opacity-60"
                       >
                         {STATUSES.map((s) => (
                           <option key={s} value={s}>

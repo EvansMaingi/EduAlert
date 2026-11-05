@@ -28,7 +28,7 @@ const initialForm = {
 };
 
 const inputClass =
-  'w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand';
+  'w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400';
 
 function errorMessage(err, fallback) {
   return err.response?.data?.error || fallback;
@@ -185,9 +185,9 @@ export default function AddStudent() {
     <div className="max-w-3xl">
       <h1 className="mb-6 text-2xl font-semibold">Add Student</h1>
 
-      {error && <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="mb-4 rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
       {success && (
-        <p className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">{success}</p>
+        <p className="mb-4 rounded-lg bg-risk-low/15 px-3 py-2 text-sm text-emerald-300">{success}</p>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -340,7 +340,7 @@ export default function AddStudent() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-5 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
+          className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-5 py-2 text-sm text-white hover:bg-brand-hover disabled:opacity-60"
         >
           {submitting ? 'Saving…' : studentSaved ? 'Retry' : 'Add Student'}
         </button>

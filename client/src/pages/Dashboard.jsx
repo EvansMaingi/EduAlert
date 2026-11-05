@@ -24,12 +24,12 @@ import {
   tierStyles,
 } from '../utils/risk';
 
-// Stat card tones: top stripe colour and icon badge tint.
+// Stat card tones: number colour and icon badge tint.
 const CARD_TONES = {
-  blue: { stripe: 'border-t-brand', badge: 'bg-[rgba(37,99,235,.1)] text-brand' },
-  red: { stripe: 'border-t-risk-high', badge: 'bg-[rgba(239,68,68,.1)] text-risk-high' },
-  amber: { stripe: 'border-t-risk-medium', badge: 'bg-[rgba(245,158,11,.1)] text-risk-medium' },
-  green: { stripe: 'border-t-risk-low', badge: 'bg-[rgba(22,163,74,.1)] text-risk-low' },
+  blue: { number: 'text-fg', badge: 'bg-brand-400/15 text-brand-300' },
+  red: { number: 'text-risk-high', badge: 'bg-risk-high/15 text-risk-high' },
+  amber: { number: 'text-risk-medium', badge: 'bg-risk-medium/15 text-risk-medium' },
+  green: { number: 'text-risk-low', badge: 'bg-risk-low/15 text-risk-low' },
 };
 
 // 16px stroke icons for the stat cards.
@@ -41,9 +41,9 @@ const CARD_ICONS = {
 };
 
 function SummaryCard({ label, value, tone, icon }) {
-  const { stripe, badge } = CARD_TONES[tone];
+  const { number, badge } = CARD_TONES[tone];
   return (
-    <div className={`rounded-xl border border-t-[3px] border-line ${stripe} bg-surface p-5 shadow-sm`}>
+    <div className="rounded-xl border border-line bg-surface p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <p className="text-sm font-medium text-fg-muted">{label}</p>
         <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${badge}`}>
@@ -62,7 +62,7 @@ function SummaryCard({ label, value, tone, icon }) {
           </svg>
         </span>
       </div>
-      <p className="metric-value mt-2 text-[28px] font-extrabold tracking-[-1px] text-fg">{value}</p>
+      <p className={`metric-value mt-2 text-[28px] font-extrabold tracking-[-1px] ${number}`}>{value}</p>
     </div>
   );
 }
@@ -94,25 +94,25 @@ function RiskDistributionChart({ distribution, notAssessed }) {
       <div className="h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={distribution} margin={{ top: 24, right: 8, bottom: 0, left: -16 }}>
-            <CartesianGrid vertical={false} stroke="#dbeafe" />
+            <CartesianGrid vertical={false} stroke="#383c50" />
             <XAxis
               dataKey="label"
               tickLine={false}
-              axisLine={{ stroke: '#dbeafe' }}
-              tick={{ fill: '#334155', fontSize: 13 }}
+              axisLine={{ stroke: '#383c50' }}
+              tick={{ fill: '#cbd5e1', fontSize: 13 }}
             />
             <YAxis
               allowDecimals={false}
               tickLine={false}
               axisLine={false}
-              tick={{ fill: '#5b7fa6', fontSize: 12 }}
+              tick={{ fill: '#94a3b8', fontSize: 12 }}
             />
-            <Tooltip content={<DistributionTooltip />} cursor={{ fill: '#f5f8ff' }} />
+            <Tooltip content={<DistributionTooltip />} cursor={{ fill: '#2d3148' }} />
             <Bar dataKey="count" maxBarSize={72} radius={[4, 4, 0, 0]} isAnimationActive={false}>
               {distribution.map((d) => (
                 <Cell key={d.tier} fill={tierColors[d.tier]} />
               ))}
-              <LabelList dataKey="count" position="top" fill="#334155" fontSize={13} fontWeight={600} />
+              <LabelList dataKey="count" position="top" fill="#cbd5e1" fontSize={13} fontWeight={600} />
             </Bar>
           </BarChart>
         </ResponsiveContainer>
@@ -187,21 +187,21 @@ function GroupedRiskChart({ title, subtitle, data, categoryKey, formatCategory =
                 barGap={2}
                 barCategoryGap="20%"
               >
-                <CartesianGrid vertical={false} stroke="#dbeafe" />
+                <CartesianGrid vertical={false} stroke="#383c50" />
                 <XAxis
                   dataKey="category"
                   tickLine={false}
-                  axisLine={{ stroke: '#dbeafe' }}
-                  tick={{ fill: '#334155', fontSize: 13 }}
+                  axisLine={{ stroke: '#383c50' }}
+                  tick={{ fill: '#cbd5e1', fontSize: 13 }}
                   interval={0}
                 />
                 <YAxis
                   allowDecimals={false}
                   tickLine={false}
                   axisLine={false}
-                  tick={{ fill: '#5b7fa6', fontSize: 12 }}
+                  tick={{ fill: '#94a3b8', fontSize: 12 }}
                 />
-                <Tooltip content={<GroupedTooltip />} cursor={{ fill: '#f5f8ff' }} />
+                <Tooltip content={<GroupedTooltip />} cursor={{ fill: '#2d3148' }} />
                 {GROUPED_SERIES.map(({ tier, dataKey, name }) => (
                   <Bar
                     key={tier}
@@ -215,7 +215,7 @@ function GroupedRiskChart({ title, subtitle, data, categoryKey, formatCategory =
                     <LabelList
                       dataKey={dataKey}
                       position="top"
-                      fill="#334155"
+                      fill="#cbd5e1"
                       fontSize={12}
                       fontWeight={600}
                       formatter={(v) => (v > 0 ? v : '')}
@@ -276,7 +276,7 @@ function TopAtRiskList({ students }) {
 
 function AnalyticsSections({ analytics, error }) {
   if (error) {
-    return <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>;
+    return <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>;
   }
   if (!analytics) {
     return <p className="text-sm text-fg-muted">Loading analytics…</p>;
@@ -357,7 +357,7 @@ export default function Dashboard() {
     <div>
       <h1 className="mb-6 text-2xl font-semibold">Dashboard</h1>
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
 
       {!error && !stats && <p className="text-sm text-fg-muted">Loading…</p>}
 
@@ -391,7 +391,7 @@ function LecturerDashboard({ atRiskStudents, myInterventions }) {
 
   return (
     <div className="space-y-6">
-      <p className="rounded-lg bg-line-subtle px-4 py-3 text-sm text-sidebar-active">
+      <p className="rounded-lg bg-line-subtle px-4 py-3 text-sm text-fg-2">
         Showing all at-risk students requiring intervention
       </p>
 
@@ -440,7 +440,7 @@ function LecturerDashboard({ atRiskStudents, myInterventions }) {
                   <td className="whitespace-nowrap px-4 py-3 text-right">
                     <button
                       onClick={() => navigate('/interventions', { state: { studentId: s.student_id } })}
-                      className="rounded-md border border-brand/20 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand hover:bg-line"
+                      className="rounded-md border border-brand-400/40 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand-300 hover:bg-line"
                     >
                       Log Intervention
                     </button>

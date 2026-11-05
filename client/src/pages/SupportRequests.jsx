@@ -53,9 +53,9 @@ export default function SupportRequests() {
         {requests ? `${pendingCount} pending` : 'Requests submitted by students in the Student Portal'}
       </p>
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
       {actionError && (
-        <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{actionError}</p>
+        <p className="mb-4 rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{actionError}</p>
       )}
 
       {!error && !requests && <p className="text-sm text-fg-muted">Loading…</p>}
@@ -90,14 +90,14 @@ export default function SupportRequests() {
                   <td className="max-w-xs px-4 py-3 text-fg-2">{r.notes || '—'}</td>
                   <td className="whitespace-nowrap px-4 py-3">
                     {r.status === 'Actioned' ? (
-                      <span className="rounded-[20px] border border-risk-low/20 bg-green-50 px-[9px] py-[3px] text-[11px] font-semibold text-risk-low">
+                      <span className="rounded-[20px] border border-risk-low/30 bg-risk-low/15 px-[9px] py-[3px] text-[11px] font-semibold text-risk-low">
                         Actioned
                       </span>
                     ) : (
                       <button
                         onClick={() => markActioned(r)}
                         disabled={updatingIds.has(r.request_id)}
-                        className="rounded-md border border-brand/20 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand hover:bg-line disabled:opacity-60"
+                        className="rounded-md border border-brand-400/40 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand-300 hover:bg-line disabled:opacity-60"
                       >
                         {updatingIds.has(r.request_id) ? 'Saving…' : 'Mark as Actioned'}
                       </button>

@@ -16,15 +16,15 @@ const SUPPORT_TYPES = [
 ];
 
 const requestStatusStyles = {
-  Pending: 'bg-slate-100 text-fg-2',
-  Actioned: 'bg-emerald-100 text-emerald-700',
+  Pending: 'bg-white/10 text-fg-2',
+  Actioned: 'bg-risk-low/15 text-emerald-300',
 };
 
 const interventionStatusStyles = {
-  Pending: 'bg-slate-100 text-fg-2',
-  Contacted: 'bg-blue-100 text-blue-700',
-  'In Progress': 'bg-amber-100 text-amber-800',
-  Resolved: 'bg-emerald-100 text-emerald-700',
+  Pending: 'bg-white/10 text-fg-2',
+  Contacted: 'bg-brand-400/15 text-brand-300',
+  'In Progress': 'bg-risk-medium/15 text-amber-300',
+  Resolved: 'bg-risk-low/15 text-emerald-300',
 };
 
 function errorMessage(err, fallback) {
@@ -183,7 +183,7 @@ export default function StudentPortal() {
   return (
     <div className="min-h-screen">
       <header className="flex h-14 items-center justify-between border-b border-line bg-surface px-6">
-        <span className="text-lg font-semibold text-brand">
+        <span className="text-lg font-semibold text-brand-300">
           EduAlert <span className="font-normal text-fg-muted">Student Portal</span>
         </span>
         <button
@@ -195,17 +195,19 @@ export default function StudentPortal() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 p-6">
-        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+        {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
         {!error && !profile && <p className="text-sm text-fg-muted">Loading…</p>}
 
         {profile && (
           <>
             <div className="relative overflow-hidden rounded-[14px] bg-[linear-gradient(135deg,#1d4ed8_0%,#2563eb_55%,#3b82f6_100%)] p-6 text-white shadow-md">
               {profile.prediction && (
-                <span
-                  className={`absolute right-5 top-5 rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${tierStyles[profile.prediction.risk_level]}`}
-                >
-                  {profile.prediction.risk_level} risk
+                <span className="absolute right-5 top-5 rounded-[20px] bg-surface">
+                  <span
+                    className={`block rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${tierStyles[profile.prediction.risk_level]}`}
+                  >
+                    {profile.prediction.risk_level} risk
+                  </span>
                 </span>
               )}
               <p className="text-sm text-fg-inv-2">Welcome back</p>
@@ -220,9 +222,9 @@ export default function StudentPortal() {
             {['High', 'Medium'].includes(profile.prediction?.risk_level) && (
               <div
                 role="alert"
-                className="rounded-[10px] border-l-4 border-risk-high bg-[rgba(239,68,68,.05)] px-4 py-3 text-sm text-fg-2"
+                className="rounded-[10px] border-l-4 border-risk-high bg-risk-high/10 px-4 py-3 text-sm text-fg-2"
               >
-                <span className="font-semibold text-risk-high">
+                <span className="font-semibold text-[#f87171]">
                   You have been flagged as {profile.prediction.risk_level} risk.
                 </span>{' '}
                 Review the areas that need attention below and request the support you need.
@@ -254,17 +256,17 @@ export default function StudentPortal() {
                 <p className="text-sm text-fg-2">
                   A risk notification was sent to you on {formatDate(notification.sent_at)}.
                 </p>
-                {ackError && <p className="mt-3 text-sm text-red-700">{ackError}</p>}
+                {ackError && <p className="mt-3 text-sm text-red-300">{ackError}</p>}
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <button
                     onClick={acknowledge}
                     disabled={notification.acknowledged || acknowledging}
-                    className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-600"
+                    className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-brand-hover disabled:cursor-not-allowed disabled:bg-white/10 disabled:text-fg-muted"
                   >
                     {acknowledging ? 'Saving…' : 'I have read and understood my risk notification'}
                   </button>
                   {notification.acknowledged && (
-                    <span className="text-sm text-emerald-700">
+                    <span className="text-sm text-emerald-300">
                       ✓ Acknowledged on {formatDate(notification.acknowledged_at)}
                     </span>
                   )}
@@ -278,8 +280,8 @@ export default function StudentPortal() {
                   <p
                     className={`rounded-lg px-3 py-2 text-sm ${
                       requestMessage.type === 'success'
-                        ? 'bg-emerald-50 text-emerald-700'
-                        : 'bg-red-50 text-red-700'
+                        ? 'bg-risk-low/15 text-emerald-300'
+                        : 'bg-risk-high/15 text-red-300'
                     }`}
                   >
                     {requestMessage.text}
@@ -310,13 +312,13 @@ export default function StudentPortal() {
                     value={supportNotes}
                     onChange={(e) => setSupportNotes(e.target.value)}
                     placeholder="e.g. which unit you need help with (added to each request)"
-                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+                    className="w-full rounded-lg border border-line px-3 py-2 text-sm focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
                   />
                 </label>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
+                  className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-brand-hover disabled:opacity-60"
                 >
                   {submitting ? 'Submitting…' : 'Submit Request'}
                 </button>

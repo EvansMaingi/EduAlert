@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
-import RiskBar from '../components/RiskBar';
+import RateBar from '../components/RateBar';
 import StudentDetailModal from '../components/StudentDetailModal';
 import StudentName from '../components/StudentName';
 import { useAuth } from '../context/AuthContext';
-import { isAtRisk, latestPredictionByStudent, riskTier, tierStyles } from '../utils/risk';
+import { isAtRisk, latestPredictionByStudent, riskTier, tierStyles, tierTextClasses } from '../utils/risk';
 import { atRiskStudents, exportAtRiskCsv, exportAtRiskPdf } from '../utils/exportAtRisk';
 
 // Builds the POST /api/predictions/predict body from a student row, which
@@ -230,7 +230,7 @@ export default function Students() {
               <button
                 onClick={runAllPredictions}
                 disabled={busy}
-                className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-sidebar-active disabled:opacity-60"
+                className="rounded-lg bg-brand font-semibold shadow-[0_1px_3px_rgba(37,99,235,.3)] px-4 py-2 text-sm text-white hover:bg-brand-hover disabled:opacity-60"
               >
                 {runningAll ? 'Running predictions…' : 'Run All Predictions'}
               </button>
@@ -239,7 +239,7 @@ export default function Students() {
         )}
       </div>
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
 
       {notice && (
         <p className="mb-4 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm text-fg-2">{notice}</p>
@@ -252,20 +252,23 @@ export default function Students() {
           <table className="min-w-full text-sm">
             <thead className="border-b border-line bg-surface-2 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
               <tr>
-                <th className="px-4 py-3">Student</th>
-                <th className="px-4 py-3">Programme</th>
-                <th className="px-4 py-3">Year</th>
-                <th className="px-4 py-3">Units</th>
-                <th className="px-4 py-3">Fee Balance</th>
-                <th className="px-4 py-3">Risk Score</th>
-                <th className="px-4 py-3">Risk Level</th>
-                <th className="px-4 py-3"></th>
+                <th className="px-2 py-3">Student</th>
+                <th className="px-2 py-3">Programme</th>
+                <th className="px-2 py-3">Year</th>
+                <th className="px-2 py-3">Units</th>
+                <th className="px-2 py-3">Fee Balance</th>
+                <th className="px-2 py-3">Attendance</th>
+                <th className="px-2 py-3">CAT Avg</th>
+                <th className="px-2 py-3">Assignments</th>
+                <th className="px-2 py-3">Risk Score</th>
+                <th className="px-2 py-3">Risk Level</th>
+                <th className="px-2 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line-subtle">
               {visibleRows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-6 text-center text-fg-muted">
+                  <td colSpan={11} className="px-4 py-6 text-center text-fg-muted">
                     {isAdmin ? 'No students found.' : 'No at-risk students right now.'}
                   </td>
                 </tr>
@@ -288,23 +291,34 @@ export default function Students() {
                     }}
                     className="cursor-pointer hover:bg-surface-2 focus:bg-line-subtle focus:outline-none"
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-3">
                       <StudentName name={s.full_name} index={s.student_id} detail={`ID ${s.student_id}`} />
                     </td>
-                    <td className="px-4 py-3">{s.programme}</td>
-                    <td className="px-4 py-3">{s.year_of_study}</td>
-                    <td className="px-4 py-3">{s.units_registered}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-3">{s.programme}</td>
+                    <td className="px-2 py-3">{s.year_of_study}</td>
+                    <td className="px-2 py-3">{s.units_registered}</td>
+                    <td className="px-2 py-3">
                       {s.fee_balance_outstanding ? 'Outstanding' : 'Cleared'}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-3">
+                      <RateBar label="Attendance" value={s.attendance_rate} />
+                    </td>
+                    <td className="px-2 py-3">
+                      <RateBar label="CAT average" value={s.cat_score_avg} />
+                    </td>
+                    <td className="px-2 py-3">
+                      <RateBar label="Assignment submission" value={s.assignment_submission_rate} />
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-3">
                       {s.prediction ? (
-                        <RiskBar score={s.prediction.risk_score} percentage={s.prediction.risk_percentage} />
+                        <span className={`font-bold tabular-nums ${tierTextClasses[tier]}`}>
+                          {s.prediction.risk_percentage}%
+                        </span>
                       ) : (
                         '—'
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-2 py-3">
                       {tier ? (
                         <span className={`rounded-[20px] px-[9px] py-[3px] text-[11px] font-semibold ${tierStyles[tier]}`}>
                           {tier}
@@ -313,7 +327,8 @@ export default function Students() {
                         <span className="text-xs text-fg-muted">Not assessed</span>
                       )}
                     </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-right">
+                    <td className="whitespace-nowrap px-2 py-3">
+                      <div className="flex flex-wrap justify-end gap-1.5">
                       {isAdmin ? (
                         <button
                           onClick={(e) => {
@@ -322,7 +337,7 @@ export default function Students() {
                           }}
                           disabled={!hasRecord || running || runningAll}
                           title={hasRecord ? undefined : 'No academic record for this student'}
-                          className="rounded-md border border-brand/20 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand hover:bg-line disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-md border border-brand-400/40 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand-300 hover:bg-line disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {running ? 'Running…' : 'Run Prediction'}
                         </button>
@@ -334,7 +349,7 @@ export default function Students() {
                             deleteStudent(s);
                           }}
                           disabled={running || runningAll || deletingIds.has(s.student_id)}
-                          className="ml-2 rounded-md border border-risk-high/20 bg-red-50 px-3 py-1 text-[11px] font-medium text-risk-high hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="rounded-md border border-risk-high/30 bg-risk-high/15 px-3 py-1 text-[11px] font-medium text-[#f87171] hover:bg-risk-high/25 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           {deletingIds.has(s.student_id) ? 'Deleting…' : 'Delete'}
                         </button>
@@ -345,11 +360,12 @@ export default function Students() {
                             e.stopPropagation();
                             navigate('/interventions', { state: { studentId: s.student_id } });
                           }}
-                          className="rounded-md border border-brand/20 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand hover:bg-line"
+                          className="rounded-md border border-brand-400/40 bg-line-subtle px-3 py-1 text-[11px] font-medium text-brand-300 hover:bg-line"
                         >
                           Log Intervention
                         </button>
                       )}
+                      </div>
                     </td>
                   </tr>
                 );

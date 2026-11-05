@@ -5,12 +5,12 @@ import { useAuth } from '../context/AuthContext';
 
 function EmailSentIcon({ sent }) {
   return sent ? (
-    <span className="inline-flex items-center gap-1.5 text-emerald-700">
+    <span className="inline-flex items-center gap-1.5 text-emerald-300">
       <span aria-hidden="true" className="text-base font-bold leading-none">✓</span>
       <span className="text-xs font-medium">Sent</span>
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1.5 text-red-700">
+    <span className="inline-flex items-center gap-1.5 text-red-300">
       <span aria-hidden="true" className="text-base font-bold leading-none">✗</span>
       <span className="text-xs font-medium">Not sent</span>
     </span>
@@ -39,7 +39,7 @@ export default function Notifications() {
     <div>
       <h1 className="mb-6 text-2xl font-semibold">Notification Log</h1>
 
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+      {error && <p className="rounded-lg bg-risk-high/15 px-3 py-2 text-sm text-red-300">{error}</p>}
 
       {!error && !notifications && <p className="text-sm text-fg-muted">Loading…</p>}
 
