@@ -45,6 +45,7 @@ export default function Students() {
   const [runningIds, setRunningIds] = useState(new Set());
   const [runningAll, setRunningAll] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
+  const [search, setSearch] = useState('');
   const closeModal = useCallback(() => setSelectedId(null), []);
 
   const loadStudents = useCallback(async () => {
@@ -190,6 +191,10 @@ export default function Students() {
       : rows
           .filter((s) => s.prediction && isAtRisk(s.prediction.risk_score))
           .sort((a, b) => b.prediction.risk_score - a.prediction.risk_score);
+  const searchTerm = search.trim().toLowerCase();
+  const listedRows = searchTerm
+    ? visibleRows.filter((s) => s.full_name.toLowerCase().includes(searchTerm))
+    : visibleRows;
   // Looked up from rows by ID so the modal reflects a refreshed list.
   const selectedStudent = rows?.find((s) => s.student_id === selectedId);
 
@@ -248,6 +253,17 @@ export default function Students() {
       {!error && !rows && <p className="text-sm text-fg-muted">Loading…</p>}
 
       {rows && (
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search students by name…"
+          aria-label="Search students by name"
+          className="mb-4 w-full max-w-sm rounded-lg border border-line bg-surface px-3 py-2 text-sm text-white placeholder:text-fg-muted focus:border-brand-400 focus:outline-none focus:ring-1 focus:ring-brand-400"
+        />
+      )}
+
+      {rows && (
         <div className="overflow-x-auto rounded-xl border border-line bg-surface shadow-sm">
           <table className="min-w-full text-sm">
             <thead className="border-b border-line bg-surface-2 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-muted">
@@ -266,14 +282,18 @@ export default function Students() {
               </tr>
             </thead>
             <tbody className="divide-y divide-line-subtle">
-              {visibleRows.length === 0 && (
+              {listedRows.length === 0 && (
                 <tr>
                   <td colSpan={11} className="px-4 py-6 text-center text-fg-muted">
-                    {isAdmin ? 'No students found.' : 'No at-risk students right now.'}
+                    {searchTerm
+                      ? 'No students found'
+                      : isAdmin
+                        ? 'No students found.'
+                        : 'No at-risk students right now.'}
                   </td>
                 </tr>
               )}
-              {visibleRows.map((s) => {
+              {listedRows.map((s) => {
                 const tier = riskTier(s.prediction?.risk_score);
                 const hasRecord = s.record_id != null;
                 const running = runningAll || runningIds.has(s.student_id);
